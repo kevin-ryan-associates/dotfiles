@@ -1,0 +1,106 @@
+# =============================================================================
+# dotfiles .gitignore
+# Excludes files that are likely to contain credentials or sensitive material.
+# When in doubt, add it here and reference secrets via your password manager
+# (e.g. 1Password CLI) instead.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Credential and secret file patterns
+# -----------------------------------------------------------------------------
+*secret*
+*secrets*
+*credential*
+*credentials*
+*.token
+*.tokens
+*_token
+*api_key*
+*apikey*
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
+auth.json
+auth.yaml
+auth.yml
+.auth
+.netrc
+.pgpass
+
+# -----------------------------------------------------------------------------
+# Environment variable files
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.template
+
+# -----------------------------------------------------------------------------
+# Cloud provider credentials
+# -----------------------------------------------------------------------------
+.aws/
+.azure/
+.gcloud/
+.config/gcloud/
+credentials.json
+service_account*.json
+*_service_account.json
+
+# -----------------------------------------------------------------------------
+# SSH
+# -----------------------------------------------------------------------------
+.ssh/id_*
+.ssh/known_hosts
+.ssh/authorized_keys
+# (track .ssh/config if you want, but be careful — it may reference key paths)
+
+# -----------------------------------------------------------------------------
+# GPG / age
+# -----------------------------------------------------------------------------
+*.gpg
+*.asc
+secring.*
+trustdb.gpg
+
+# -----------------------------------------------------------------------------
+# macOS
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# -----------------------------------------------------------------------------
+# Editors and tools
+# -----------------------------------------------------------------------------
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# -----------------------------------------------------------------------------
+# Shell history — never track these
+# -----------------------------------------------------------------------------
+.zsh_history
+.bash_history
+.node_repl_history
+.python_history
+
+# -----------------------------------------------------------------------------
+# Package manager noise
+# -----------------------------------------------------------------------------
+node_modules/
+__pycache__/
+*.pyc
+
+# -----------------------------------------------------------------------------
+# Explicitly safe to track (override any accidental matches above)
+# -----------------------------------------------------------------------------
+# Uncomment if needed:
+# !zsh/.zshrc
+# !nvim/.config/nvim/lua/plugins/*.lua
+

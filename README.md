@@ -7,7 +7,7 @@ Currently tracking:
 - **`zsh`** — Zsh shell configuration with Zinit plugin manager, Starship prompt, and comprehensive aliases
 - **`starship`** — Starship prompt configuration with Tokyo Night palette
 - **`nvim`** — [AstroNvim](https://astronvim.com/) Neovim setup with Tokyo Night colorscheme
-- **`opencode`** — [OpenCode](https://github.com/opencode-ai/opencode) CLI AI coding agent
+- **`opencode`** — [OpenCode](https://github.com/opencode-ai/opencode) CLI AI coding agent with Tokyo Night theme
 - **`ghostty`** — [Ghostty](https://ghostty.org/) terminal emulator with Tokyo Night theme
 - **`bat`** — Syntax highlighting with Tokyo Night theme
 - **`btop`** — Resource monitor with Tokyo Night theme
@@ -199,6 +199,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 |---|---|
 | **Neovim** | `tokyonight.nvim` plugin with `style = "night"` |
 | **Ghostty** | Built-in `theme = Tokyo Night` |
+| **opencode** | Built-in `tokyonight` theme |
 | **Starship** | Custom `tokyo_night` palette |
 | **fzf** | Tokyo Night color exports |
 | **bat** | `tokyonight_night.tmTheme` syntax highlighting |

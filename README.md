@@ -94,7 +94,10 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 ├── opencode/
 │   └── .config/
 │       └── opencode/               → ~/.config/opencode/
-│           └── opencode.jsonc
+│           ├── opencode.jsonc
+│           ├── tui.json
+│           └── themes/
+│               └── tokyonight-moon.json  → ~/.config/opencode/themes/tokyonight-moon.json
 └── ghostty/
     └── .config/
         └── ghostty/                → ~/.config/ghostty/
@@ -216,7 +219,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 |---|---|
 | **Neovim** | `tokyonight.nvim` plugin with `style = "moon"` |
 | **Ghostty** | Built-in `theme = TokyoNight Moon` |
-| **opencode** | Built-in `tokyonight` theme (uses Moon palette) |
+| **opencode** | Custom `tokyonight-moon` theme (Moon palette guaranteed) |
 | **Starship** | Custom `tokyo_night` palette (Moon colors) |
 | **fzf** | Tokyo Night Moon color exports |
 | **bat** | `tokyonight_moon.tmTheme` syntax highlighting |

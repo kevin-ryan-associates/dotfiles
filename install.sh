@@ -13,7 +13,7 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "==> Installing Homebrew dependencies for Zsh ecosystem..."
-brew install stow starship eza bat fzf zoxide fd git-delta lazygit
+brew install stow starship eza bat fzf zoxide fd git-delta lazygit lazydocker
 
 echo "==> Installing CLI utilities..."
 brew install jq yq htop tree btop herdr
@@ -50,7 +50,7 @@ bat cache --build
 
 echo "==> Stowing dotfiles packages..."
 cd "$(dirname "$0")"
-stow -R bat btop git herdr htop lazygit zsh starship nvim opencode ghostty
+stow -R bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty
 
 echo ""
 echo "========================================"

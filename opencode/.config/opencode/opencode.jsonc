@@ -4,7 +4,5 @@
   // Default to OpenCode Zen
   "model": "opencode/kimi-k2.6",
 
-  "autoupdate": true,
-
-  "theme": "tokyonight"
+  "autoupdate": true
 }

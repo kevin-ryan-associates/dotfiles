@@ -16,6 +16,7 @@ Currently tracking:
 - **`lazygit`** — TUI git client with Tokyo Night colors
 - **`git`** — Git config with Tokyo Night delta diff colors
 - **`lazydocker`** — TUI Docker client with Tokyo Night colors
+- **`colima`** — Docker runtime (replaces Docker Desktop, no GUI)
 
 ## Why this exists
 
@@ -196,6 +197,7 @@ These tools are installed by `install.sh` and integrate with the Zsh configurati
 | `helm` | Kubernetes package manager | Native command |
 | `k9s` | TUI Kubernetes cluster manager | Native command |
 | `cmake` | Build system generator | Required for Neovim plugin builds |
+| `colima` | Docker runtime (VM-based) | Replaces Docker Desktop; `colima start/stop` |
 
 ### Banner
 
@@ -297,8 +299,8 @@ brew install kubectl helm k9s
 # Build tools
 brew install cmake
 
-# Docker Desktop
-brew install --cask docker
+# Docker runtime (Colima — lightweight, no GUI)
+brew install colima
 
 # 1Password CLI (for secret management)
 brew install --cask 1password-cli
@@ -350,6 +352,23 @@ opencode auth
 ```
 
 Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles repo and never tracked.
+
+### 7. Start Colima (Docker runtime)
+
+Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
+
+```bash
+colima start        # Start the Docker VM (~10s on first run)
+docker ps           # Verify it works
+lazydocker          # TUI Docker client connects automatically
+colima stop         # Stop when done
+colima status       # Check if running
+```
+
+Colima creates a VM with default specs (2 CPU, 2GB RAM). To customize:
+```bash
+colima start --cpu 4 --memory 8 --disk 60
+```
 
 ## Conflicts on a fresh machine
 

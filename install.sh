@@ -27,8 +27,8 @@ brew install kubectl helm k9s
 echo "==> Installing build tools..."
 brew install cmake
 
-echo "==> Installing Docker Desktop..."
-brew install --cask docker || true
+echo "==> Installing Colima (Docker runtime without GUI)..."
+brew install colima
 
 echo "==> Installing 1Password CLI..."
 brew install --cask 1password-cli || true
@@ -62,4 +62,5 @@ echo "  1. Open a new terminal window"
 echo "  2. Zinit will auto-install on first run (~10-30s)"
 echo "  3. Run 'nvim' to install AstroNvim plugins"
 echo "  4. Run 'opencode auth' to authenticate"
+echo "  5. Run 'colima start' to launch the Docker runtime"
 echo ""

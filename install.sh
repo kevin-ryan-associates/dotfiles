@@ -16,7 +16,7 @@ echo "==> Installing Homebrew dependencies for Zsh ecosystem..."
 brew install stow starship eza bat fzf zoxide fd git-delta lazygit
 
 echo "==> Installing CLI utilities..."
-brew install jq yq htop tree herdr
+brew install jq yq htop tree btop herdr
 
 echo "==> Installing Git platform CLIs..."
 brew install gh glab
@@ -50,7 +50,7 @@ bat cache --build
 
 echo "==> Stowing dotfiles packages..."
 cd "$(dirname "$0")"
-stow -R bat git lazygit zsh starship nvim opencode ghostty
+stow -R bat btop git lazygit zsh starship nvim opencode ghostty
 
 echo ""
 echo "========================================"

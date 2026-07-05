@@ -140,8 +140,4 @@ export LESS='-R --use-color -Dd+r$Du+b'
 if [[ -o interactive && -f "$HOME/.config/ainative/banner.sh" ]]; then
   source "$HOME/.config/ainative/banner.sh"
 fi
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/kevinryan/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
+

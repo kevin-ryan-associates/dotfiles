@@ -15,6 +15,7 @@ Currently tracking:
 - **`htop`** — Process viewer with Black Night color scheme (closest to Tokyo Night in htop)
 - **`lazygit`** — TUI git client with Tokyo Night colors
 - **`git`** — Git config with Tokyo Night delta diff colors
+- **`lazydocker`** — TUI Docker client with Tokyo Night colors
 
 ## Why this exists
 
@@ -56,7 +57,7 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 │       └── bat/
 │           ├── config               → ~/.config/bat/config
 │           └── themes/
-│               └── tokyonight_night.tmTheme
+│               └── tokyonight_moon.tmTheme
 ├── btop/
 │   └── .config/
 │       └── btop/
@@ -73,8 +74,22 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 │   └── .config/
 │       └── lazygit/
 │           └── config.yml           → ~/.config/lazygit/config.yml
+│   └── Library/
+│       └── Application Support/
+│           └── lazygit/
+│               └── config.yml       → ~/Library/Application Support/lazygit/config.yml
+├── lazydocker/
+│   └── .config/
+│       └── lazydocker/
+│           └── config.yml           → ~/.config/lazydocker/config.yml
+│   └── Library/
+│       └── Application Support/
+│           └── lazydocker/
+│               └── config.yml       → ~/Library/Application Support/lazydocker/config.yml
 ├── git/
-│   └── .gitconfig                   → ~/.gitconfig
+│   └── .config/
+│       └── git/
+│           └── config               → ~/.config/git/config
 ├── opencode/
 │   └── .config/
 │       └── opencode/               → ~/.config/opencode/
@@ -120,7 +135,7 @@ Normally, Zsh loads plugins immediately during shell startup, which adds latency
 - Execution time for slow commands
 - Exit status indicator
 
-The custom **neon_dark** palette uses cyan, green, magenta, and amber on dark backgrounds to match the ainative banner.
+The custom **tokyo_night** palette uses Tokyo Night Moon colors (cyan, green, magenta, amber) on dark backgrounds to match the ainative banner.
 
 ### Key Features
 
@@ -193,22 +208,23 @@ export AINATIVE_NO_BANNER=1
 
 ## Tokyo Night Theme
 
-This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme across all tools for a consistent, cohesive terminal experience. Based on the `night` variant from [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim).
+This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme across all tools for a consistent, cohesive terminal experience. Based on the **`moon`** variant from [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim).
 
 | Tool | Theme Integration |
 |---|---|
-| **Neovim** | `tokyonight.nvim` plugin with `style = "night"` |
-| **Ghostty** | Built-in `theme = Tokyo Night` |
-| **opencode** | Built-in `tokyonight` theme |
-| **Starship** | Custom `tokyo_night` palette |
-| **fzf** | Tokyo Night color exports |
-| **bat** | `tokyonight_night.tmTheme` syntax highlighting |
+| **Neovim** | `tokyonight.nvim` plugin with `style = "moon"` |
+| **Ghostty** | Built-in `theme = TokyoNight Moon` |
+| **opencode** | Built-in `tokyonight` theme (uses Moon palette) |
+| **Starship** | Custom `tokyo_night` palette (Moon colors) |
+| **fzf** | Tokyo Night Moon color exports |
+| **bat** | `tokyonight_moon.tmTheme` syntax highlighting |
 | **btop** | Built-in `tokyo-night` theme |
 | **herdr** | Built-in `tokyo-night` theme |
 | **htop** | Black Night color scheme (closest available) |
-| **lazygit** | Tokyo Night colors in `config.yml` |
-| **delta** | Tokyo Night diff colors in `.gitconfig` |
-| **Zsh banner** | ANSI colors mapped to Tokyo Night palette |
+| **lazygit** | Tokyo Night Moon colors in `config.yml` |
+| **lazydocker** | Tokyo Night Moon best-effort colors |
+| **delta** | Tokyo Night Moon diff colors in `~/.config/git/config` |
+| **Zsh banner** | ANSI colors mapped to Tokyo Night Moon palette |
 
 ## Neovim
 
@@ -308,7 +324,7 @@ cd ~/dotfiles
 ### 3. Stow the packages
 
 ```bash
-stow bat btop git herdr htop lazygit zsh starship nvim opencode ghostty
+stow bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty
 ```
 
 That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
@@ -371,7 +387,7 @@ This half is always deliberate git, regardless of tooling:
 # machine B
 cd ~/dotfiles
 git pull
-stow -R bat btop git herdr htop lazygit zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
+stow -R bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
 ```
 
 If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git.
@@ -433,8 +449,11 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/btop/btop.conf` | ✅ | Resource monitor config and theme |
 | `~/.config/herdr/config.toml` | ✅ | Terminal workspace multiplexer theme |
 | `~/.config/htop/htoprc` | ✅ | htop color scheme config |
-| `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme |
-| `~/.gitconfig` | ✅ | Git config with delta colors |
+| `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (Linux) |
+| `~/Library/Application Support/lazygit/config.yml` | ✅ | Lazygit UI theme (macOS) |
+| `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (Linux) |
+| `~/Library/Application Support/lazydocker/config.yml` | ✅ | Lazydocker UI theme (macOS) |
+| `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 
 ## Platform notes

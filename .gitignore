@@ -104,3 +104,9 @@ __pycache__/
 # !zsh/.zshrc
 # !nvim/.config/nvim/lua/plugins/*.lua
 
+
+# ---------------------------------------------------------------------------
+# Opencode auto-generated files
+# ---------------------------------------------------------------------------
+opencode/.config/opencode/*.bak
+opencode/.config/opencode/plugins/

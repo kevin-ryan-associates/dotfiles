@@ -28,7 +28,7 @@ echo "==> Installing build tools..."
 brew install cmake
 
 echo "==> Installing Colima (Docker runtime without GUI)..."
-brew install colima
+brew install colima docker
 
 echo "==> Installing 1Password CLI..."
 brew install --cask 1password-cli || true

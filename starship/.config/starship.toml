@@ -1,5 +1,5 @@
-# Starship config -- Tokyo Night palette
-# based on folke/tokyonight.nvim night variant
+# Starship config -- Tokyo Night Moon palette
+# based on folke/tokyonight.nvim moon variant
 
 "$schema" = 'https://starship.rs/config-schema.json'
 
@@ -27,20 +27,20 @@ palette = "tokyo_night"
 
 [palettes.tokyo_night]
 # panel backgrounds (dark)
-color_panel = "#16161e"
-color_dir   = "#1a1b26"
-color_git   = "#24283b"
-color_lang  = "#1a1b26"
-color_time  = "#24283b"
+color_panel = "#1e2030"
+color_dir   = "#222436"
+color_git   = "#2f334d"
+color_lang  = "#222436"
+color_time  = "#2f334d"
 # accents
-color_cyan    = "#7dcfff"
-color_green   = "#9ece6a"
-color_magenta = "#bb9af7"
-color_blue    = "#7aa2f7"
-color_amber   = "#e0af68"
-color_red     = "#f7768e"
-color_text    = "#c0caf5"
-color_dim     = "#565f89"
+color_cyan    = "#86e1fc"
+color_green   = "#c3e88d"
+color_magenta = "#c099ff"
+color_blue    = "#82aaff"
+color_amber   = "#ffc777"
+color_red     = "#ff757f"
+color_text    = "#c8d3f5"
+color_dim     = "#636da6"
 
 [os]
 disabled = true
@@ -116,11 +116,11 @@ style = "bg:color_time fg:color_cyan"
 format = '[ 󰥔 $time ]($style)'
 
 [character]
-success_symbol = '[❯](bold #9ece6a)'
-error_symbol   = '[❯](bold #f7768e)'
-vimcmd_symbol  = '[❮](bold #e0af68)'
+success_symbol = '[❯](bold #c3e88d)'
+error_symbol   = '[❯](bold #ff757f)'
+vimcmd_symbol  = '[❮](bold #ffc777)'
 
 [cmd_duration]
 min_time = 500
 format = "[ took $duration]($style) "
-style = "fg:#e0af68"
+style = "fg:#ffc777"

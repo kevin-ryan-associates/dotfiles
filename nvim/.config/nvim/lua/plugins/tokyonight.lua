@@ -3,7 +3,7 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
-    style = "night",
+    style = "moon",
     -- Enable telescope support and other plugin integrations
     plugins = {
       auto = true,

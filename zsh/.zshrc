@@ -75,22 +75,22 @@ export FZF_DEFAULT_OPTS="
   --ansi
   --layout=reverse
   --border=none
-  --color=bg+:#283457
-  --color=bg:#16161e
-  --color=border:#27a1b9
-  --color=fg:#c0caf5
-  --color=gutter:#16161e
-  --color=header:#ff9e64
-  --color=hl+:#2ac3de
-  --color=hl:#2ac3de
-  --color=info:#545c7e
-  --color=marker:#ff007c
-  --color=pointer:#ff007c
-  --color=prompt:#2ac3de
-  --color=query:#c0caf5:regular
-  --color=scrollbar:#27a1b9
-  --color=separator:#ff9e64
-  --color=spinner:#ff007c
+  --color=bg+:#2f334d
+  --color=bg:#222436
+  --color=border:#0db9d7
+  --color=fg:#c8d3f5
+  --color=gutter:#222436
+  --color=header:#ff966c
+  --color=hl+:#86e1fc
+  --color=hl:#86e1fc
+  --color=info:#636da6
+  --color=marker:#c099ff
+  --color=pointer:#c099ff
+  --color=prompt:#86e1fc
+  --color=query:#c8d3f5:regular
+  --color=scrollbar:#0db9d7
+  --color=separator:#ff966c
+  --color=spinner:#c099ff
 "
 
 # ---- zoxide ---------------------------------------------------------------
@@ -128,7 +128,7 @@ alias rm='rm -i'
 alias reload='exec zsh'
 
 # ---- Bat theme ------------------------------------------------------------
-export BAT_THEME="tokyonight_night"
+export BAT_THEME="tokyonight_moon"
 
 # ---- Editor ---------------------------------------------------------------
 export EDITOR=nvim
@@ -140,3 +140,8 @@ export LESS='-R --use-color -Dd+r$Du+b'
 if [[ -o interactive && -f "$HOME/.config/ainative/banner.sh" ]]; then
   source "$HOME/.config/ainative/banner.sh"
 fi
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/kevinryan/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions

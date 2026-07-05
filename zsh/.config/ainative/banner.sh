@@ -19,15 +19,15 @@ if [[ -t 1 ]]; then
   fi
 fi
 
-# Tokyo Night palette (night variant).
-local C_BLUE=$'\e[38;2;122;162;247m'      # #7aa2f7
-local C_BLUE_D=$'\e[38;2;90;130;220m'     # deep blue
-local C_CYAN=$'\e[38;2;125;207;255m'      # #7dcfff
-local C_CYAN_D=$'\e[38;2;90;170;230m'     # deep cyan
-local C_GREEN=$'\e[38;2;158;206;106m'     # #9ece6a
-local C_PURPLE=$'\e[38;2;187;154;247m'    # #bb9af7
-local C_TEXT=$'\e[38;2;192;202;245m'      # #c0caf5
-local C_DIM=$'\e[38;2;86;95;137m'         # #565f89
+# Tokyo Night Moon palette.
+local C_BLUE=$'\e[38;2;130;170;255m'      # #82aaff
+local C_BLUE_D=$'\e[38;2;96;140;235m'     # deep blue
+local C_CYAN=$'\e[38;2;134;225;252m'      # #86e1fc
+local C_CYAN_D=$'\e[38;2;100;190;230m'     # deep cyan
+local C_GREEN=$'\e[38;2;195;232;141m'     # #c3e88d
+local C_PURPLE=$'\e[38;2;192;153;255m'    # #c099ff
+local C_TEXT=$'\e[38;2;200;211;245m'      # #c8d3f5
+local C_DIM=$'\e[38;2;99;109;166m'        # #636da6
 local BOLD=$'\e[1m'
 local DIM=$'\e[2m'
 local RST=$'\e[0m'

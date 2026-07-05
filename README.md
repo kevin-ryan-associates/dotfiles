@@ -300,7 +300,9 @@ brew install kubectl helm k9s
 brew install cmake
 
 # Docker runtime (Colima — lightweight, no GUI)
-brew install colima
+# docker-compose provides the v2 compose plugin; install.sh wires cliPluginsExtraDirs
+# into ~/.docker/config.json so `docker compose` resolves out of the box.
+brew install colima docker docker-compose
 
 # 1Password CLI (for secret management)
 brew install --cask 1password-cli
@@ -360,6 +362,7 @@ Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
 ```bash
 colima start        # Start the Docker VM (~10s on first run)
 docker ps           # Verify it works
+docker compose version   # Confirm compose plugin is wired up
 lazydocker          # TUI Docker client connects automatically
 colima stop         # Stop when done
 colima status       # Check if running

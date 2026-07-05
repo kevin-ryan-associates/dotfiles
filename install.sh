@@ -28,7 +28,35 @@ echo "==> Installing build tools..."
 brew install cmake
 
 echo "==> Installing Colima (Docker runtime without GUI)..."
-brew install colima docker
+brew install colima docker docker-compose
+
+echo "==> Configuring Docker CLI plugins..."
+mkdir -p ~/.docker
+CONFIG_FILE="$HOME/.docker/config.json"
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo '{}' > "$CONFIG_FILE"
+fi
+PLUGINS_DIR="$(brew --prefix)/lib/docker/cli-plugins"
+tmp=$(mktemp)
+jq --arg dir "$PLUGINS_DIR" '
+  if (.cliPluginsExtraDirs // []) | index($dir) then . else
+    .cliPluginsExtraDirs = ((.cliPluginsExtraDirs // []) + [$dir])
+  end
+  | if .credsStore == "desktop" then del(.credsStore) else . end
+' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+
+echo "==> Cleaning up stale Docker Desktop symlinks (if present)..."
+# Self-heal: machines that previously had Docker Desktop may have broken symlinks
+# pointing at the removed .app. Fresh machines have none, so this is a no-op there.
+# Only touch broken symlinks; leave working brew links alone.
+for link in /usr/local/bin/docker-compose \
+            /usr/local/bin/docker-credential-desktop \
+            /usr/local/bin/docker-credential-osxkeychain; do
+  if [ -L "$link" ] && [ ! -e "$link" ]; then
+    sudo rm -f "$link" 2>/dev/null || \
+      echo "  skipping $link (no sudo TTY; run manually: sudo rm $link)"
+  fi
+done
 
 echo "==> Installing 1Password CLI..."
 brew install --cask 1password-cli || true

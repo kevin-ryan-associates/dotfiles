@@ -28,13 +28,13 @@ echo "==> Installing build tools..."
 brew install cmake
 
 echo "==> Installing Docker Desktop..."
-brew install --cask docker
+brew install --cask docker || true
 
 echo "==> Installing 1Password CLI..."
-brew install --cask 1password-cli
+brew install --cask 1password-cli || true
 
 echo "==> Installing terminal emulator..."
-brew install --cask ghostty
+brew install --cask ghostty || true
 
 echo "==> Installing Neovim and dependencies..."
 brew install neovim node npm ripgrep

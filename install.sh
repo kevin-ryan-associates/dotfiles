@@ -50,7 +50,7 @@ bat cache --build
 
 echo "==> Stowing dotfiles packages..."
 cd "$(dirname "$0")"
-stow -R bat btop git herdr lazygit zsh starship nvim opencode ghostty
+stow -R bat btop git herdr htop lazygit zsh starship nvim opencode ghostty
 
 echo ""
 echo "========================================"

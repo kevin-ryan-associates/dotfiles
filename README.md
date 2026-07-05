@@ -12,6 +12,7 @@ Currently tracking:
 - **`bat`** — Syntax highlighting with Tokyo Night theme
 - **`btop`** — Resource monitor with Tokyo Night theme
 - **`herdr`** — Terminal workspace multiplexer with Tokyo Night theme
+- **`htop`** — Process viewer with Black Night color scheme (closest to Tokyo Night in htop)
 - **`lazygit`** — TUI git client with Tokyo Night colors
 - **`git`** — Git config with Tokyo Night delta diff colors
 
@@ -64,6 +65,10 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 │   └── .config/
 │       └── herdr/
 │           └── config.toml          → ~/.config/herdr/config.toml
+├── htop/
+│   └── .config/
+│       └── htop/
+│           └── htoprc               → ~/.config/htop/htoprc
 ├── lazygit/
 │   └── .config/
 │       └── lazygit/
@@ -199,6 +204,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 | **bat** | `tokyonight_night.tmTheme` syntax highlighting |
 | **btop** | Built-in `tokyo-night` theme |
 | **herdr** | Built-in `tokyo-night` theme |
+| **htop** | Black Night color scheme (closest available) |
 | **lazygit** | Tokyo Night colors in `config.yml` |
 | **delta** | Tokyo Night diff colors in `.gitconfig` |
 | **Zsh banner** | ANSI colors mapped to Tokyo Night palette |
@@ -301,7 +307,7 @@ cd ~/dotfiles
 ### 3. Stow the packages
 
 ```bash
-stow bat btop git herdr lazygit zsh starship nvim opencode ghostty
+stow bat btop git herdr htop lazygit zsh starship nvim opencode ghostty
 ```
 
 That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
@@ -364,7 +370,7 @@ This half is always deliberate git, regardless of tooling:
 # machine B
 cd ~/dotfiles
 git pull
-stow -R bat btop git herdr lazygit zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
+stow -R bat btop git herdr htop lazygit zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
 ```
 
 If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git.
@@ -425,6 +431,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/bat/` | ✅ | Syntax highlighting theme and config |
 | `~/.config/btop/btop.conf` | ✅ | Resource monitor config and theme |
 | `~/.config/herdr/config.toml` | ✅ | Terminal workspace multiplexer theme |
+| `~/.config/htop/htoprc` | ✅ | htop color scheme config |
 | `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme |
 | `~/.gitconfig` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |

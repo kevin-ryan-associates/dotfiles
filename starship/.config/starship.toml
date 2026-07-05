@@ -1,10 +1,9 @@
-# Starship config -- dark/techy neon palette
-# matches the ainative banner: cyan / green / magenta / amber on near-black
+# Starship config -- Tokyo Night palette
+# based on folke/tokyonight.nvim night variant
 
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = """[](color_panel)\
-$os\
 $username\
 [](bg:color_dir fg:color_panel)\
 $directory\
@@ -24,32 +23,27 @@ $time\
 [ ](fg:color_time)\
 $character"""
 
-palette = "neon_dark"
+palette = "tokyo_night"
 
-[palettes.neon_dark]
+[palettes.tokyo_night]
 # panel backgrounds (dark)
-color_panel = "#11141a"
-color_dir   = "#161b22"
-color_git   = "#1a1f29"
-color_lang  = "#0f1318"
-color_time  = "#1c1c28"
+color_panel = "#16161e"
+color_dir   = "#1a1b26"
+color_git   = "#24283b"
+color_lang  = "#1a1b26"
+color_time  = "#24283b"
 # accents
-color_cyan    = "#00e5ff"
-color_green   = "#00ff8c"
-color_magenta = "#ff00c8"
-color_blue    = "#3c78ff"
-color_amber   = "#ffb000"
-color_red     = "#ff4070"
-color_text    = "#c8d2dc"
-color_dim     = "#5a6473"
+color_cyan    = "#7dcfff"
+color_green   = "#9ece6a"
+color_magenta = "#bb9af7"
+color_blue    = "#7aa2f7"
+color_amber   = "#e0af68"
+color_red     = "#f7768e"
+color_text    = "#c0caf5"
+color_dim     = "#565f89"
 
 [os]
 disabled = true
-
-[os.symbols]
-Ubuntu = "󰕈"
-Debian = "󰣚"
-Linux  = "󰌽"
 
 [username]
 show_always = true
@@ -122,11 +116,11 @@ style = "bg:color_time fg:color_cyan"
 format = '[ 󰥔 $time ]($style)'
 
 [character]
-success_symbol = '[❯](bold #00ff8c)'
-error_symbol   = '[❯](bold #ff4070)'
-vimcmd_symbol  = '[❮](bold #ffb000)'
+success_symbol = '[❯](bold #9ece6a)'
+error_symbol   = '[❯](bold #f7768e)'
+vimcmd_symbol  = '[❮](bold #e0af68)'
 
 [cmd_duration]
 min_time = 500
 format = "[ took $duration]($style) "
-style = "fg:#ffb000"
+style = "fg:#e0af68"

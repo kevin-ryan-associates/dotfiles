@@ -19,28 +19,26 @@ if [[ -t 1 ]]; then
   fi
 fi
 
-# Dark / techy neon palette (terminal-hacker vibe).
-local C_CYAN=$'\e[38;2;0;229;255m'      # neon cyan
-local C_CYAN_D=$'\e[38;2;0;160;200m'    # deep cyan
-local C_GREEN=$'\e[38;2;0;255;140m'     # matrix green
-local C_GREEN_D=$'\e[38;2;0;180;100m'   # deep green
-local C_MAG=$'\e[38;2;255;0;200m'       # neon magenta
-local C_MAG_D=$'\e[38;2;180;0;160m'     # deep magenta
-local C_BLUE=$'\e[38;2;60;120;255m'     # electric blue
-local C_AMBER=$'\e[38;2;255;176;0m'     # amber
-local C_TEXT=$'\e[38;2;200;210;220m'    # soft white
-local C_DIM=$'\e[38;2;90;100;115m'      # slate dim
+# Tokyo Night palette (night variant).
+local C_BLUE=$'\e[38;2;122;162;247m'      # #7aa2f7
+local C_BLUE_D=$'\e[38;2;90;130;220m'     # deep blue
+local C_CYAN=$'\e[38;2;125;207;255m'      # #7dcfff
+local C_CYAN_D=$'\e[38;2;90;170;230m'     # deep cyan
+local C_GREEN=$'\e[38;2;158;206;106m'     # #9ece6a
+local C_PURPLE=$'\e[38;2;187;154;247m'    # #bb9af7
+local C_TEXT=$'\e[38;2;192;202;245m'      # #c0caf5
+local C_DIM=$'\e[38;2;86;95;137m'         # #565f89
 local BOLD=$'\e[1m'
 local DIM=$'\e[2m'
 local RST=$'\e[0m'
 
-# "AI NATIVE" rendered in ANSI Shadow style, all in matrix green.
+# "AI NATIVE" rendered in ANSI Shadow style, all in Tokyo Night blue.
 print
-print "${C_GREEN} █████╗ ██╗${C_DIM}    ${C_GREEN}███╗   ██╗ █████╗ ████████╗██╗██╗   ██╗███████╗${RST}"
-print "${C_GREEN}██╔══██╗██║${C_DIM}    ${C_GREEN}████╗  ██║██╔══██╗╚══██╔══╝██║██║   ██║██╔════╝${RST}"
-print "${C_GREEN}███████║██║${C_DIM}    ${C_GREEN}██╔██╗ ██║███████║   ██║   ██║██║   ██║█████╗  ${RST}"
-print "${C_GREEN_D}██╔══██║██║${C_DIM}    ${C_GREEN_D}██║╚██╗██║██╔══██║   ██║   ██║╚██╗ ██╔╝██╔══╝  ${RST}"
-print "${C_GREEN_D}██║  ██║██║${C_DIM}    ${C_GREEN_D}██║ ╚████║██║  ██║   ██║   ██║ ╚████╔╝ ███████╗${RST}"
+print "${C_BLUE} █████╗ ██╗${C_DIM}    ${C_BLUE}███╗   ██╗ █████╗ ████████╗██╗██╗   ██╗███████╗${RST}"
+print "${C_BLUE}██╔══██╗██║${C_DIM}    ${C_BLUE}████╗  ██║██╔══██╗╚══██╔══╝██║██║   ██║██╔════╝${RST}"
+print "${C_BLUE}███████║██║${C_DIM}    ${C_BLUE}██╔██╗ ██║███████║   ██║   ██║██║   ██║█████╗  ${RST}"
+print "${C_BLUE_D}██╔══██║██║${C_DIM}    ${C_BLUE_D}██║╚██╗██║██╔══██║   ██║   ██║╚██╗ ██╔╝██╔══╝  ${RST}"
+print "${C_BLUE_D}██║  ██║██║${C_DIM}    ${C_BLUE_D}██║ ╚████║██║  ██║   ██║   ██║ ╚████╔╝ ███████╗${RST}"
 print "${C_DIM}╚═╝  ╚═╝╚═╝    ╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═══╝  ╚══════╝${RST}"
 print
 
@@ -50,6 +48,6 @@ local zsh_v=$ZSH_VERSION
 local node_v=$(node -v 2>/dev/null)
 local py_v=$(python3 -V 2>/dev/null | awk '{print $2}')
 
-print "  ${BOLD}${C_GREEN}»${RST} ${C_TEXT}nvim${RST} ${C_DIM}${nvim_v}${RST}   ${BOLD}${C_GREEN}»${RST} ${C_TEXT}zsh${RST} ${C_DIM}${zsh_v}${RST}   ${BOLD}${C_GREEN}»${RST} ${C_TEXT}node${RST} ${C_DIM}${node_v}${RST}   ${BOLD}${C_GREEN}»${RST} ${C_TEXT}python${RST} ${C_DIM}${py_v}${RST}"
+print "  ${BOLD}${C_CYAN}»${RST} ${C_TEXT}nvim${RST} ${C_DIM}${nvim_v}${RST}   ${BOLD}${C_CYAN}»${RST} ${C_TEXT}zsh${RST} ${C_DIM}${zsh_v}${RST}   ${BOLD}${C_CYAN}»${RST} ${C_TEXT}node${RST} ${C_DIM}${node_v}${RST}   ${BOLD}${C_CYAN}»${RST} ${C_TEXT}python${RST} ${C_DIM}${py_v}${RST}"
 print "  ${DIM}${C_DIM}// ai-native development environment${RST}"
 print

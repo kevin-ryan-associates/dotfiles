@@ -1,4 +1,6 @@
-
-# Nerd Font for Powerlevel10k icons
+# Nerd Font for icons
 font-family = MesloLGS Nerd Font Mono
 font-size = 14
+
+# Tokyo Night theme (built-in)
+theme = Tokyo Night

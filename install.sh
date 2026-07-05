@@ -45,9 +45,12 @@ curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install -
 bash /tmp/opencode-install.sh --no-modify-path
 rm -f /tmp/opencode-install.sh
 
+echo "==> Building bat theme cache..."
+bat cache --build
+
 echo "==> Stowing dotfiles packages..."
 cd "$(dirname "$0")"
-stow -R zsh starship nvim opencode ghostty
+stow -R bat git lazygit zsh starship nvim opencode ghostty
 
 echo ""
 echo "========================================"

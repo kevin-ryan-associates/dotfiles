@@ -5,10 +5,13 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 Currently tracking:
 
 - **`zsh`** — Zsh shell configuration with Zinit plugin manager, Starship prompt, and comprehensive aliases
-- **`starship`** — Starship prompt configuration with a dark neon palette
-- **`nvim`** — [AstroNvim](https://astronvim.com/) Neovim setup
+- **`starship`** — Starship prompt configuration with Tokyo Night palette
+- **`nvim`** — [AstroNvim](https://astronvim.com/) Neovim setup with Tokyo Night colorscheme
 - **`opencode`** — [OpenCode](https://github.com/opencode-ai/opencode) CLI AI coding agent
-- **`ghostty`** — [Ghostty](https://ghostty.org/) terminal emulator
+- **`ghostty`** — [Ghostty](https://ghostty.org/) terminal emulator with Tokyo Night theme
+- **`bat`** — Syntax highlighting with Tokyo Night theme
+- **`lazygit`** — TUI git client with Tokyo Night colors
+- **`git`** — Git config with Tokyo Night delta diff colors
 
 ## Why this exists
 
@@ -45,6 +48,18 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 │       └── nvim/                   → ~/.config/nvim/
 │           ├── init.lua
 │           └── lua/...
+├── bat/
+│   └── .config/
+│       └── bat/
+│           ├── config               → ~/.config/bat/config
+│           └── themes/
+│               └── tokyonight_night.tmTheme
+├── lazygit/
+│   └── .config/
+│       └── lazygit/
+│           └── config.yml           → ~/.config/lazygit/config.yml
+├── git/
+│   └── .gitconfig                   → ~/.gitconfig
 ├── opencode/
 │   └── .config/
 │       └── opencode/               → ~/.config/opencode/
@@ -160,6 +175,21 @@ An interactive shell displays a startup banner showing the **AI NATIVE** ASCII a
 export AINATIVE_NO_BANNER=1
 ```
 
+## Tokyo Night Theme
+
+This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme across all tools for a consistent, cohesive terminal experience. Based on the `night` variant from [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim).
+
+| Tool | Theme Integration |
+|---|---|
+| **Neovim** | `tokyonight.nvim` plugin with `style = "night"` |
+| **Ghostty** | Built-in `theme = Tokyo Night` |
+| **Starship** | Custom `tokyo_night` palette |
+| **fzf** | Tokyo Night color exports |
+| **bat** | `tokyonight_night.tmTheme` syntax highlighting |
+| **lazygit** | Tokyo Night colors in `config.yml` |
+| **delta** | Tokyo Night diff colors in `.gitconfig` |
+| **Zsh banner** | ANSI colors mapped to Tokyo Night palette |
+
 ## Neovim
 
 This repo uses [AstroNvim](https://astronvim.com/) as the base configuration. The following customizations are layered on top:
@@ -258,7 +288,7 @@ cd ~/dotfiles
 ### 3. Stow the packages
 
 ```bash
-stow zsh starship nvim opencode ghostty
+stow bat git lazygit zsh starship nvim opencode ghostty
 ```
 
 That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
@@ -321,7 +351,7 @@ This half is always deliberate git, regardless of tooling:
 # machine B
 cd ~/dotfiles
 git pull
-stow -R zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
+stow -R bat git lazygit zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
 ```
 
 If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git.
@@ -379,6 +409,9 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.zshrc` / `.zshenv` / `.zprofile` | ✅ | Shell config |
 | `~/.config/starship.toml` | ✅ | Prompt config |
 | `~/.config/ainative/banner.sh` | ✅ | Startup banner |
+| `~/.config/bat/` | ✅ | Syntax highlighting theme and config |
+| `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme |
+| `~/.gitconfig` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 
 ## Platform notes

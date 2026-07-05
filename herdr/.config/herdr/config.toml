@@ -1,0 +1,5 @@
+# Herdr config -- agent multiplexer with Tokyo Night theme
+
+[theme]
+name = "tokyo-night"
+auto_switch = false

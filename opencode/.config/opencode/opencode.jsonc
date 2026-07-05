@@ -1,8 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  // Default to OpenCode Zen
-  "model": "opencode/kimi-k2.6",
+  // Default to OpenCode Go tier — Kimi K2.7 Code
+  "model": "opencode-go/kimi-k2.7-code",
 
   "autoupdate": true
 }

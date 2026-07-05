@@ -1,0 +1,132 @@
+# Starship config -- dark/techy neon palette
+# matches the ainative banner: cyan / green / magenta / amber on near-black
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """[](color_panel)\
+$os\
+$username\
+[](bg:color_dir fg:color_panel)\
+$directory\
+[](fg:color_dir bg:color_git)\
+$git_branch\
+$git_status\
+[](fg:color_git bg:color_lang)\
+$python\
+$nodejs\
+$rust\
+$golang\
+$lua\
+$docker_context\
+$kubernetes\
+[](fg:color_lang bg:color_time)\
+$time\
+[ ](fg:color_time)\
+$character"""
+
+palette = "neon_dark"
+
+[palettes.neon_dark]
+# panel backgrounds (dark)
+color_panel = "#11141a"
+color_dir   = "#161b22"
+color_git   = "#1a1f29"
+color_lang  = "#0f1318"
+color_time  = "#1c1c28"
+# accents
+color_cyan    = "#00e5ff"
+color_green   = "#00ff8c"
+color_magenta = "#ff00c8"
+color_blue    = "#3c78ff"
+color_amber   = "#ffb000"
+color_red     = "#ff4070"
+color_text    = "#c8d2dc"
+color_dim     = "#5a6473"
+
+[os]
+disabled = true
+
+[os.symbols]
+Ubuntu = "󰕈"
+Debian = "󰣚"
+Linux  = "󰌽"
+
+[username]
+show_always = true
+style_user = "bg:color_panel fg:color_text"
+style_root = "bg:color_panel fg:color_red"
+format = '[ $user ]($style)'
+
+[directory]
+style = "bg:color_dir fg:color_cyan"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = "󰇚"
+"Music"     = "󰝚"
+"Pictures"  = "󰉏"
+"workspace" = "󰙴"
+
+[git_branch]
+symbol = "󰊢"
+style = "bg:color_git fg:color_amber"
+format = '[ $symbol $branch ]($style)'
+
+[git_status]
+style = "bg:color_git fg:color_magenta"
+format = '[$all_status$ahead_behind ]($style)'
+
+[python]
+symbol = "󰌠"
+style = "bg:color_lang fg:color_green"
+format = '[ $symbol($version)(\($virtualenv\)) ]($style)'
+
+[nodejs]
+symbol = "󰎙"
+style = "bg:color_lang fg:color_green"
+format = '[ $symbol($version) ]($style)'
+
+[rust]
+symbol = "󱘗"
+style = "bg:color_lang fg:color_amber"
+format = '[ $symbol($version) ]($style)'
+
+[golang]
+symbol = "󰟓"
+style = "bg:color_lang fg:color_cyan"
+format = '[ $symbol($version) ]($style)'
+
+[lua]
+symbol = "󰢱"
+style = "bg:color_lang fg:color_blue"
+format = '[ $symbol($version) ]($style)'
+
+[docker_context]
+symbol = "󰡨"
+style = "bg:color_lang fg:color_blue"
+format = '[ $symbol$context ]($style)'
+
+[kubernetes]
+disabled = false
+symbol = "󱃾"
+style = "bg:color_lang fg:color_magenta"
+format = '[ $symbol$context( \($namespace\)) ]($style)'
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:color_time fg:color_cyan"
+format = '[ 󰥔 $time ]($style)'
+
+[character]
+success_symbol = '[❯](bold #00ff8c)'
+error_symbol   = '[❯](bold #ff4070)'
+vimcmd_symbol  = '[❮](bold #ffb000)'
+
+[cmd_duration]
+min_time = 500
+format = "[ took $duration]($style) "
+style = "fg:#ffb000"

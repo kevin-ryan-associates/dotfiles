@@ -4,10 +4,11 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 
 Currently tracking:
 
+- **`zsh`** — Zsh shell configuration with Zinit plugin manager, Starship prompt, and comprehensive aliases
+- **`starship`** — Starship prompt configuration with a dark neon palette
 - **`nvim`** — [AstroNvim](https://astronvim.com/) Neovim setup
 - **`opencode`** — [OpenCode](https://github.com/opencode-ai/opencode) CLI AI coding agent
 - **`ghostty`** — [Ghostty](https://ghostty.org/) terminal emulator
-- **`zsh`** — Zsh shell config (`.zshrc`, `.zshenv`, `.zprofile`)
 
 ## Why this exists
 
@@ -31,30 +32,179 @@ Each top-level folder in this repo is a Stow **package**. The directory structur
 
 ```
 ~/dotfiles/
+├── zsh/
+│   ├── .zshrc                      → ~/.zshrc
+│   ├── .zshenv                     → ~/.zshenv
+│   └── .config/ainative/
+│       └── banner.sh               → ~/.config/ainative/banner.sh
+├── starship/
+│   └── .config/
+│       └── starship.toml           → ~/.config/starship.toml
 ├── nvim/
 │   └── .config/
-│       └── nvim/              → ~/.config/nvim/
+│       └── nvim/                   → ~/.config/nvim/
 │           ├── init.lua
 │           └── lua/...
 ├── opencode/
 │   └── .config/
-│       └── opencode/          → ~/.config/opencode/
-│           └── opencode.json
-├── ghostty/
-│   └── .config/
-│       └── ghostty/           → ~/.config/ghostty/
-│           └── config
-└── zsh/
-    ├── .zshrc                 → ~/.zshrc
-    ├── .zshenv                → ~/.zshenv
-    └── .zprofile              → ~/.zprofile
+│       └── opencode/               → ~/.config/opencode/
+│           └── opencode.jsonc
+└── ghostty/
+    └── .config/
+        └── ghostty/                → ~/.config/ghostty/
+            └── config
 ```
 
-When you run `stow nvim` from inside `~/dotfiles`, Stow treats the `nvim/` package folder as transparent and replicates everything beneath it into your home directory as symlinks.
-
-Note that Zsh's config files live directly in `$HOME` rather than `~/.config/`, so the `zsh` package has no `.config/` nesting — files at the package root land directly at `~/.zshrc` etc.
+When you run `stow zsh` from inside `~/dotfiles`, Stow treats the `zsh/` package folder as transparent and replicates everything beneath it into your home directory as symlinks.
 
 > **The one rule that matters:** the path *inside* each package must mirror the target path under `$HOME`. Get that nesting right and everything else just works. If files ever link to the wrong place, it's almost always a package's internal structure not matching the target layout.
+
+## Zsh Configuration
+
+### Plugin Manager: Zinit
+
+[Zinit](https://github.com/zdharma-continuum/zinit) is a flexible and fast Zsh plugin manager. On the first interactive shell startup, it automatically clones itself to `~/.local/share/zinit/` if it isn't already present. There is no separate install step.
+
+**How turbo loading works:**
+
+Normally, Zsh loads plugins immediately during shell startup, which adds latency. Zinit's `wait lucid` directive **defers** plugin loading until *after* the prompt appears. This means your shell is usable instantly, and plugins load quietly in the background. The trade-off is a ~100ms gap where completions aren't yet available — practically unnoticeable.
+
+**Plugins loaded:**
+
+| Plugin | What it does | Load mode |
+|---|---|---|
+| `fast-syntax-highlighting` | Syntax highlighting as you type | Turbo (`wait`) |
+| `zsh-autosuggestions` | Suggests completions from history | Turbo (`wait`, starts on load) |
+| `zsh-completions` | Additional completion definitions for many tools | Turbo (`wait`) |
+| `fzf-tab` | Replaces Zsh's default tab completion with an fzf interface | Turbo (`wait`) |
+
+### Prompt: Starship
+
+[Starship](https://starship.rs/) is a minimal, blazing-fast, and infinitely customizable prompt written in Rust. It displays:
+
+- OS and username
+- Current directory (with icon substitutions for common folders)
+- Git branch and status
+- Language versions (Python, Node.js, Rust, Go, Lua)
+- Docker and Kubernetes contexts
+- Execution time for slow commands
+- Exit status indicator
+
+The custom **neon_dark** palette uses cyan, green, magenta, and amber on dark backgrounds to match the ainative banner.
+
+### Key Features
+
+| Feature | Description |
+|---|---|
+| **History** | 100,000 entries, shared across sessions, ignores duplicates and spaces |
+| **Auto-cd** | Type a directory name to `cd` into it without typing `cd` |
+| **Completion** | Case-insensitive matching, git-aware, `fzf` preview for directories |
+| **fzf-tab** | Preview directories with `eza` when tab-completing `cd` or `zoxide` |
+| **zoxide** | Smart `cd` command that learns your habits — use `z` instead of `cd` |
+
+### Aliases
+
+| Alias | Command | Description |
+|---|---|---|
+| `ls` | `eza --icons --group-directories-first` | List files |
+| `ll` | `eza -l --icons --git --group-directories-first` | Long list |
+| `la` | `eza -la --icons --git --group-directories-first` | All files |
+| `lt` | `eza --tree --icons --level=2` | Tree view |
+| `cat` | `bat --paging=never` | Syntax-highlighted cat |
+| `less` | `bat --paging=always` | Syntax-highlighted less |
+| `diff` | `delta` | Beautiful diffs |
+| `g` | `git` | Short git |
+| `lg` | `lazygit` | TUI git client |
+| `v` / `vi` / `vim` | `nvim` | Neovim |
+| `k` | `kubectl` | Kubernetes |
+| `d` | `docker` | Docker |
+| `dc` | `docker compose` | Docker Compose |
+| `tf` | `terraform` | Terraform |
+| `oc` | `opencode` | OpenCode AI agent |
+| `cp` / `mv` / `rm` | `*-i` | Interactive (safer) defaults |
+| `reload` | `exec zsh` | Quick shell restart |
+
+### Installed CLI tools
+
+These tools are installed by `install.sh` and integrate with the Zsh configuration:
+
+| Tool | Purpose | Zsh integration |
+|---|---|---|
+| `eza` | Modern `ls` replacement | Aliased to `ls`, `ll`, `la`, `lt` |
+| `bat` | Syntax-highlighted `cat`/`less` | Aliased to `cat`, `less`; `BAT_THEME` set |
+| `fzf` | Fuzzy finder | Tab completion, file search, directory preview |
+| `zoxide` | Smart `cd` | `z` command replaces `cd`; learns habits |
+| `fd` | Fast `find` replacement | Powers `fzf` file/directory listing |
+| `git-delta` | Beautiful diffs | Aliased to `diff`; `GIT_PAGER` |
+| `lazygit` | TUI git client | Aliased to `lg` |
+| `ripgrep` | Fast grep | Used by Neovim/telescope |
+| `jq` | JSON processor | Command-line JSON queries |
+| `yq` | YAML processor | Command-line YAML queries |
+| `gh` | GitHub CLI | PRs, issues, `gh copilot` |
+| `glab` | GitLab CLI | PRs, issues, pipelines |
+| `htop` | Interactive process viewer | Better `top` |
+| `tree` | Directory tree listing | Hierarchical directory views |
+| `1password-cli` | 1Password secrets | Fetch secrets via `op read` in `.zshrc` |
+| `herdr` | Agent multiplexer | Terminal workspace manager |
+| `kubectl` | Kubernetes CLI | Aliased to `k` |
+| `helm` | Kubernetes package manager | Native command |
+| `k9s` | TUI Kubernetes cluster manager | Native command |
+| `cmake` | Build system generator | Required for Neovim plugin builds |
+
+### Banner
+
+An interactive shell displays a startup banner showing the **AI NATIVE** ASCII art and tool versions (nvim, zsh, node, python). It is shown **once per session** and automatically skipped inside Neovim terminals.
+
+**Disable the banner:**
+```bash
+export AINATIVE_NO_BANNER=1
+```
+
+## Neovim
+
+This repo uses [AstroNvim](https://astronvim.com/) as the base configuration. The following customizations are layered on top:
+
+### Symbol search (Aerial)
+
+[Aerial](https://github.com/stevearc/aerial.nvim) provides a symbol outline / code navigation sidebar. It ships with AstroNvim by default.
+
+A custom **Tree-sitter query** (`queries/dockerfile/aerial.scm`) adds Dockerfile symbol support to Aerial. When you open a `Dockerfile`, the symbol tree shows:
+
+| Symbol | Kind | Description |
+|---|---|---|
+| `FROM <image>` | Module | Build stage |
+| `RUN ...` | Method | Shell command |
+| `COPY / ADD` | Method | File copy |
+| `WORKDIR` | Method | Working directory |
+| `ENV` | Method | Environment variable |
+| `ARG` | Method | Build argument |
+| `LABEL` | Method | Image metadata |
+
+**How to use:** Open a Dockerfile and press `<Leader>ls` (or `:AerialToggle`) to open the symbol sidebar. Navigate with `j`/`k`, press `Enter` to jump to the symbol.
+
+### Docker support
+
+`lua/plugins/docker.lua` imports the AstroCommunity Docker pack, which automatically installs:
+
+- **Treesitter grammar** for Dockerfile syntax highlighting
+- **docker-language-server** — LSP for Dockerfile intelligence
+- **hadolint** — Dockerfile linter (catches best-practice violations)
+
+No manual config needed — open a `Dockerfile` and it Just Works.
+
+### Shell consistency
+
+`lua/plugins/shell.lua` forces Neovim to use `/bin/zsh` (the macOS system zsh) for:
+
+- `:terminal` — embedded terminal buffers
+- `:!` — external command execution
+- **toggleterm** — floating/split terminal windows
+
+This ensures your shell aliases, Zinit plugins, and environment are available inside Neovim terminals.
+
+### Neo-tree (file tree)
+
+`lua/plugins/neotree.lua` configures the file tree to show **hidden files and dotfiles by default**, matching the behavior of your terminal `ls` aliases.
 
 ## Fresh machine setup
 
@@ -63,17 +213,39 @@ Note that Zsh's config files live directly in `$HOME` rather than `~/.config/`, 
 On macOS with Homebrew:
 
 ```bash
+# Stow (required)
 brew install stow
 
-# Terminal
+# Zsh ecosystem (all required for the .zshrc to work properly)
+brew install starship eza bat fzf zoxide fd git-delta lazygit
+
+# CLI utilities
+brew install jq yq htop tree herdr
+
+# Git platform CLIs
+brew install gh glab
+
+# Kubernetes tooling
+brew install kubectl helm k9s
+
+# Build tools
+brew install cmake
+
+# Docker Desktop
+brew install --cask docker
+
+# 1Password CLI (for secret management)
+brew install --cask 1password-cli
+
+# Terminal emulator
 brew install --cask ghostty
 
-# Neovim (AstroNvim requires Nerd Font and a few dependencies)
-brew install neovim node npm lazygit ripgrep fd
+# Neovim (AstroNvim requires a Nerd Font)
+brew install neovim node npm ripgrep
 brew install --cask font-jetbrains-mono-nerd-font   # or your preferred Nerd Font
 
 # OpenCode
-npm install -g opencode
+curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
 ```
 
 ### 2. Clone this repo
@@ -86,12 +258,16 @@ cd ~/dotfiles
 ### 3. Stow the packages
 
 ```bash
-stow nvim opencode ghostty zsh
+stow zsh starship nvim opencode ghostty
 ```
 
 That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
 
-### 4. Install AstroNvim plugins
+### 4. First Launch
+
+Open a new terminal. Zinit will auto-install itself and all plugins on the first run. This takes ~10-30 seconds depending on your connection. After it completes, run `reload` or open a new terminal to see the full prompt.
+
+### 5. Install AstroNvim plugins
 
 Open Neovim — Lazy.nvim will detect the config and install all plugins on first launch:
 
@@ -101,7 +277,7 @@ nvim
 
 Mason (LSP/linter/formatter installer) will also run on first open. Let it complete before doing anything else.
 
-### 5. Authenticate OpenCode
+### 6. Authenticate OpenCode
 
 ```bash
 opencode auth
@@ -109,9 +285,9 @@ opencode auth
 
 Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles repo and never tracked.
 
-### Conflicts on a fresh machine
+## Conflicts on a fresh machine
 
-If an application already wrote a default config before you stowed (e.g. `~/.config/opencode/opencode.json` already exists as a real file), Stow refuses to clobber it and reports a conflict. Two ways out:
+If an application already wrote a default config before you stowed (e.g. `~/.config/opencode/opencode.jsonc` already exists as a real file), Stow refuses to clobber it and reports a conflict. Two ways out:
 
 - Remove or back up the offending target file, then `stow` again, **or**
 - `stow --adopt nvim` — but use this carefully. `--adopt` pulls the *existing target file's contents into the repo*, overwriting the repo's version. Commit first so you can diff and revert if it swallowed something you wanted to keep.
@@ -145,7 +321,7 @@ This half is always deliberate git, regardless of tooling:
 # machine B
 cd ~/dotfiles
 git pull
-stow -R nvim opencode ghostty zsh   # restow: cleans up and re-links after a pull that added files
+stow -R zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
 ```
 
 If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git.
@@ -154,10 +330,10 @@ If you edit on two machines without pulling first, you get a normal git divergen
 
 | Command | What it does |
 |---|---|
-| `stow nvim` | Link the `nvim` package into `$HOME` |
-| `stow -R nvim` | **Restow** — unlink then relink. Run after a `git pull` that added new files |
-| `stow -D nvim` | **Unstow** — remove the package's symlinks (leaves the repo files untouched) |
-| `stow nvim opencode ghostty zsh` | Operate on multiple packages at once |
+| `stow zsh` | Link the `zsh` package into `$HOME` |
+| `stow -R zsh` | **Restow** — unlink then relink. Run after a `git pull` that added new files |
+| `stow -D zsh` | **Unstow** — remove the package's symlinks (leaves the repo files untouched) |
+| `stow zsh starship nvim` | Operate on multiple packages at once |
 
 Notes:
 
@@ -188,7 +364,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 - **Never put API keys or tokens in config files.** Reference environment variables instead, and set those via your password manager CLI at shell startup — e.g. `export NEBIUS_API_KEY="$(op read 'op://vault/nebius/api_key')"` in `.zshrc`. The key is fetched at shell startup, never touches the repo.
 - **Never blanket-add.** Always `git add -p` or add specific files. A `.gitignore` that excludes `*.token`, `*secret*`, `*key*`, `auth.json` patterns is cheap insurance.
 - **Audit before pushing anywhere public.** Run [`gitleaks detect`](https://github.com/gitleaks/gitleaks) over the repo. Remember that *anything ever committed stays in history* even if you later delete it — scrub with `git filter-repo` and rotate the key if anything slips through.
-- **OpenCode auth lives outside the repo.** Tokens are stored in `~/.local/share/opencode/` — not tracked. But check `opencode.json` for any inline API keys if you've manually edited it.
+- **OpenCode auth lives outside the repo.** Tokens are stored in `~/.local/share/opencode/` — not tracked. But check `opencode.jsonc` for any inline API keys if you've manually edited it.
 - **Zsh config is the highest-risk file.** It's easy to export a key inline in `.zshrc` and forget it's there. Audit it before the first commit.
 
 ## What is and isn't tracked
@@ -201,6 +377,9 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.local/share/opencode/` | ❌ | Auth tokens — never track |
 | `~/.config/ghostty/` | ✅ | Terminal config |
 | `~/.zshrc` / `.zshenv` / `.zprofile` | ✅ | Shell config |
+| `~/.config/starship.toml` | ✅ | Prompt config |
+| `~/.config/ainative/banner.sh` | ✅ | Startup banner |
+| `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 
 ## Platform notes
 
@@ -209,4 +388,3 @@ These configs assume macOS / Linux with the standard XDG layout (`~/.config`, `~
 ## License
 
 Personal config — take whatever's useful.
-

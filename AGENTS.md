@@ -100,7 +100,7 @@ Stow deploys a package in one of two shapes, and both are correct:
 
 The `opencode` package is the directory-symlink shape: `~/.config/opencode` →
 `../dotfiles/opencode/.config/opencode`. Consequently
-`~/.config/opencode/agents/analyze.md` is the same inode as the repo file, yet
+`~/.config/opencode/agents/sdd-analyze.md` is the same inode as the repo file, yet
 `ls -l` shows a regular file. Runtime artifacts (`node_modules/`, `package.json`,
 `package-lock.json`) live in the repo working tree (gitignored) because application
 writes flow through the directory symlink — expected, not a defect.

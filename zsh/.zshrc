@@ -130,6 +130,9 @@ alias reload='exec zsh'
 # ---- Bat theme ------------------------------------------------------------
 export BAT_THEME="tokyonight_moon"
 
+# ---- Tool-specific env ----------------------------------------------------
+export OPENSPEC_TELEMETRY=0   # disable OpenSpec anonymous usage stats
+
 # ---- Editor ---------------------------------------------------------------
 export EDITOR=nvim
 export VISUAL=nvim

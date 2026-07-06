@@ -73,6 +73,9 @@ curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install -
 bash /tmp/opencode-install.sh --no-modify-path
 rm -f /tmp/opencode-install.sh
 
+echo "==> Installing OpenSpec (spec-driven dev framework)..."
+npm install -g @fission-ai/openspec@latest
+
 echo "==> Building bat theme cache..."
 bat cache --build
 

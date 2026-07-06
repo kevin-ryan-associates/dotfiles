@@ -201,6 +201,7 @@ These tools are installed by `install.sh` and integrate with the Zsh configurati
 | `k9s` | TUI Kubernetes cluster manager | Native command |
 | `cmake` | Build system generator | Required for Neovim plugin builds |
 | `colima` | Docker runtime (VM-based) | Replaces Docker Desktop; `colima start/stop` |
+| `openspec` | Spec-driven dev framework | Native opencode slash commands (`/opsx:propose`, etc.); telemetry opt-out via `OPENSPEC_TELEMETRY=0` |
 
 ### Banner
 
@@ -319,6 +320,9 @@ brew install --cask font-jetbrains-mono-nerd-font   # or your preferred Nerd Fon
 
 # OpenCode
 curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
+
+# OpenSpec (spec-driven dev framework; integrates with opencode via /opsx:* commands)
+npm install -g @fission-ai/openspec@latest
 ```
 
 ### 2. Clone this repo
@@ -358,7 +362,46 @@ opencode auth
 
 Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles repo and never tracked.
 
-### 7. Start Colima (Docker runtime)
+### 7. Initialize OpenSpec (per project)
+
+OpenSpec is installed globally, but needs initializing in each project where you want spec-driven workflows. From inside the project:
+
+```bash
+openspec init                       # generates openspec/ + wires opencode slash commands
+openspec init --tools opencode      # non-interactive: just opencode, no other agent prompts
+```
+
+This creates `openspec/` (specs + changes) plus `.opencode/skills/openspec-*/` and `.opencode/commands/opsx-*.md` so `/opsx:propose`, `/opsx:explore`, `/opsx:apply`, `/opsx:archive` are available inside opencode for that project. Telemetry is disabled via `OPENSPEC_TELEMETRY=0` in `.zshrc`.
+
+#### About the `npm warn allow-scripts` message
+
+When `install.sh` runs `npm install -g @fission-ai/openspec@latest`, npm prints:
+
+```
+npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn allow-scripts   @fission-ai/openspec@1.5.0 (postinstall: node scripts/postinstall.js)
+npm warn allow-scripts Run `npm install -g --allow-scripts=@fission-ai/openspec` ...
+```
+
+This is **expected and intentionally left in place**. Modern npm (v7+) blocks a package's `postinstall` script by default as a supply-chain safety guard — a global package's install scripts can run arbitrary code on your machine, so npm refuses to run them unless explicitly allow-listed.
+
+We do **not** allow-list `@fission-ai/openspec`'s postinstall in `install.sh` because:
+
+1. **The CLI works without it.** `openspec --version`, `openspec init`, `openspec update` all function correctly with the script suppressed (verified during `install.sh` setup).
+2. **Defense in depth.** Global npm packages are vendored from a registry; running their install scripts without review is exactly what the guard exists to prevent. Running install scripts is an opt-in privilege, not a sensible default.
+3. **Decision is reversible per-user.** If a future OpenSpec release's postinstall does something you want (e.g., prints a one-time migration hint), allow it once:
+   ```bash
+   npm install -g --allow-scripts=@fission-ai/openspec @fission-ai/openspec@latest
+   ```
+   Or permanently trust this package:
+   ```bash
+   npm config set allow-scripts=@fission-ai/openspec --location=user
+   ```
+   Re-running `bash install.sh` will continue to work either way — the warning is informational, not an error.
+
+The `set -euo pipefail` in `install.sh` is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
+
+### 8. Start Colima (Docker runtime)
 
 Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
 

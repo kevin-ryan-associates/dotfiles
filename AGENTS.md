@@ -85,6 +85,36 @@ See the Docker Desktop symlink block in `install-mac.sh` for the reference patte
 - **No secrets, no history, no machine-specific state.** If an app writes session/auth state into its config dir, that dir is not tracked (see README "What is and isn't tracked").
 - **Editing a deployed file edits the repo.** Because Stow uses symlinks. Edit the repo source for clarity; the deployed file updates automatically. Don't edit the deployed path directly — it works, but obscures what changed in git.
 
+### Stow deployment shape — read before verifying symlinks
+
+Stow deploys a package in one of two shapes, and both are correct:
+
+- **Per-file symlinks** — when the target directory already exists with unrelated
+  content, Stow creates a real subdirectory at the target and symlinks each tracked
+  file into it. `ls -l ~/.config/<app>/<file>` shows `lrwxr-xr-x`.
+- **Directory symlink** — when the target directory is exclusively this package's
+  content, Stow folds it into a single symlink: `~/.config/<app>` →
+  `../dotfiles/<app>/.config/<app>`. Files *under* it are not individually symlinked;
+  they are reached through the one directory link and appear as regular files
+  (`-rw-r--r--`) when listed. **This is not a broken deployment.**
+
+The `opencode` package is the directory-symlink shape: `~/.config/opencode` →
+`../dotfiles/opencode/.config/opencode`. Consequently
+`~/.config/opencode/agents/analyze.md` is the same inode as the repo file, yet
+`ls -l` shows a regular file. Runtime artifacts (`node_modules/`, `package.json`,
+`package-lock.json`) live in the repo working tree (gitignored) because application
+writes flow through the directory symlink — expected, not a defect.
+
+**Verifying a Stow deployment (do this, not `ls -l`):**
+
+- `ls -ld ~/.config/<app>` — `-d` shows the entry itself; `l` confirms a directory
+  symlink. (`ls -l ~/.config/<app>/<file>` through a dir symlink shows the file's
+  own mode and is misleading.)
+- Compare inodes: `stat -f %i <repo file>` and `stat -f %i <deployed file>` —
+  identical inode = correctly stowed (same file, two names).
+- `stow -R -v -n <package>` — dry-run; reports `LINK`/`UNLINK` actions and the
+  already-linked state without mutating.
+
 ## Docs-sync rule (hard convention)
 
 `brew-packages.sh` and the README "Fresh machine setup" section both list the brew install commands. **They must stay in sync.** When you add or change a formula in `brew-packages.sh`, update the corresponding macOS and Ubuntu README blocks in the same change. AGENTS.md treats drift between them as a defect.

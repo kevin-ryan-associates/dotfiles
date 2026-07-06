@@ -32,9 +32,14 @@ RUN apt-get update \
 RUN useradd -m -s /usr/bin/zsh dotfiles \
     && echo "dotfiles ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+# TTY-aware entrypoint: `docker run -it` drops into zsh; headless `docker run` exits 0.
+COPY test/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 USER dotfiles
 WORKDIR /home/dotfiles
 ENV HOME=/home/dotfiles
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # =============================================================================
 # Flavor 1: local-state — tests install-linux.sh against the working tree.
@@ -47,7 +52,7 @@ RUN bash /home/dotfiles/dotfiles/install-linux.sh
 RUN bash /home/dotfiles/dotfiles/test/assertions.sh
 # Default interactive shell — `docker run -it dotfiles-test:local` drops into zsh
 # with the full configured environment (starship, plugins, aliases).
-CMD ["zsh"]
+# Headless `docker run` exits 0 via the inherited TTY-aware entrypoint.
 
 # =============================================================================
 # Flavor 2: published-contract — tests the real public one-liner against main.

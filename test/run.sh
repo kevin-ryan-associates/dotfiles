@@ -14,5 +14,5 @@ echo "==> Building dotfiles-test:$FLAVOR (context: $REPO_ROOT)"
 docker build --target "$FLAVOR" -t "dotfiles-test:$FLAVOR" -f test/Dockerfile .
 
 echo "==> Build OK; running container sanity check..."
-docker run --rm "dotfiles-test:$FLAVOR" zsh -c 'true'
+docker run --rm "dotfiles-test:$FLAVOR"
 echo "==> $FLAVOR test PASSED"

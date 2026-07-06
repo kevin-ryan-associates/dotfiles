@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# =============================================================================
+# dotfiles bootstrap script — public one-liner entry point
+# Clones (or pulls) the repo into ~/dotfiles, then execs install.sh.
+# Does NOT install tooling itself; that is install.sh's job.
+#
+#   curl -fsSL https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh | bash
+# =============================================================================
+
+REPO_URL="https://github.com/kevin-ryan-associates/dotfiles.git"
+CLONE_DIR="$HOME/dotfiles"
+RAW_URL="https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh"
+
+# git comes with Xcode Command Line Tools, which Homebrew also requires.
+# Fail early with a clear message rather than letting `git clone` trigger a
+# system dialog mid-script.
+if ! command -v git >/dev/null 2>&1; then
+  echo "ERROR: git not found. Install Xcode Command Line Tools first:" >&2
+  echo "  xcode-select --install" >&2
+  echo "Then re-run: curl -fsSL $RAW_URL | bash" >&2
+  exit 1
+fi
+
+if [ -d "$CLONE_DIR/.git" ]; then
+  echo "==> $CLONE_DIR already cloned; pulling latest..."
+  # --ff-only: refuse to synthesize a merge commit. If the machine has local
+  # divergent commits, fail loudly with git's own error so the user resolves
+  # manually. Matches README's "regular git divergence" contract.
+  git -C "$CLONE_DIR" pull --ff-only
+elif [ -e "$CLONE_DIR" ]; then
+  echo "ERROR: $CLONE_DIR exists but is not a git clone of this repo." >&2
+  echo "       Move or remove it, then re-run: curl -fsSL $RAW_URL | bash" >&2
+  exit 1
+else
+  echo "==> Cloning dotfiles into $CLONE_DIR..."
+  git clone "$REPO_URL" "$CLONE_DIR"
+fi
+
+echo "==> Handing off to install.sh..."
+# exec: replace this process so install.sh's exit code is the caller's exit
+# code. Without exec, a piped `curl | bash` would report bootstrap's exit
+# status, masking install.sh failures.
+exec bash "$CLONE_DIR/install.sh"

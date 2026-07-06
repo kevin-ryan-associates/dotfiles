@@ -8,8 +8,34 @@ set -euo pipefail
 
 echo "==> Checking for Homebrew..."
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew not found. Please install it first: https://brew.sh"
-  exit 1
+  echo "Homebrew not found. Installing from https://brew.sh ..."
+  echo "(Requires Xcode Command Line Tools — a GUI dialog may appear for consent.)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Homebrew's installer does NOT put brew on PATH for the current shell.
+  # Source it in-process so the `brew install` lines below work this run.
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  else
+    echo "ERROR: Homebrew install completed but brew not found at expected path." >&2
+    exit 1
+  fi
+fi
+
+echo "==> Ensuring brew shellenv is in ~/.zprofile..."
+# Runtime-value file (brew --prefix is /opt/homebrew on Apple Silicon,
+# /usr/local on Intel). Stow can't represent this — install.sh owns it,
+# same pattern as ~/.docker/config.json below. Idempotent: don't duplicate.
+ZPROFILE="$HOME/.zprofile"
+BREW_PREFIX="$(brew --prefix)"
+SHELLENV_CMD="eval \"\$(${BREW_PREFIX}/bin/brew shellenv)\""
+touch "$ZPROFILE" 2>/dev/null || true
+if ! grep -qF 'brew shellenv' "$ZPROFILE" 2>/dev/null; then
+  printf '\n# Added by dotfiles install.sh — brew on PATH for interactive shells\n%s\n' "$SHELLENV_CMD" >> "$ZPROFILE"
+  echo "  added shellenv line to $ZPROFILE"
+else
+  echo "  shellenv already present in $ZPROFILE"
 fi
 
 echo "==> Installing Homebrew dependencies for Zsh ecosystem..."

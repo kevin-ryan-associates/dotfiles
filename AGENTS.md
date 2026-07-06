@@ -117,4 +117,5 @@ False success claims are the worst AGENTS.md violation. ambient silence about a 
 
 - **README.md** — full project context, Stow layout, theme policy, fresh-machine setup. Read it for the big picture; AGENTS.md is for *how to make changes safely*.
 - **install.sh** — authoritative tooling + machine-state script.
+- **bootstrap.sh** — public one-liner wrapper (`curl | bash`). Clones/pulls the repo to `~/dotfiles` and `exec`s `install.sh`. Does not itself install tooling — that's install.sh's job.
 - **Top-level folders** — Stow packages. One folder per application's config.

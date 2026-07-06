@@ -280,7 +280,29 @@ This ensures your shell aliases, Zinit plugins, and environment are available in
 
 ## Fresh machine setup
 
-### 1. Install prerequisites
+### 1. One-liner (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh | bash
+```
+
+This clones the repo to `~/dotfiles` (or `git pull`s if already present), then runs `install.sh`, which:
+
+- Installs Homebrew if missing (requires a one-time GUI consent dialog for Xcode Command Line Tools on a truly fresh Mac)
+- Installs all brew formulae and casks listed in the manual alternative below
+- Configures `~/.docker/config.json` for Colima's compose plugin
+- Writes `brew shellenv` into `~/.zprofile` so `brew` is on PATH for interactive shells (the path is `brew --prefix`-dependent — `/opt/homebrew` on Apple Silicon, `/usr/local` on Intel — so it can't be a Stow package; install.sh owns it, like `~/.docker/config.json`)
+- Stows all config packages into `$HOME`
+
+Then continue to [First Launch](#3-first-launch) below.
+
+> **Heads up — Xcode Command Line Tools:** on a truly fresh macOS, the Homebrew install step pops a GUI dialog for CLT. Click Install, wait for it to finish, and the script continues. This is unavoidable — it's Homebrew's own prerequisite. If `git` is also missing, `bootstrap.sh` exits early with a message to run `xcode-select --install` first.
+
+### 2. Manual alternative (if you prefer not to pipe to bash)
+
+The one-liner above does exactly this, step by step:
+
+#### Install prerequisites
 
 On macOS with Homebrew:
 
@@ -316,7 +338,7 @@ brew install --cask ghostty
 
 # Neovim (AstroNvim requires a Nerd Font)
 brew install neovim node npm ripgrep
-brew install --cask font-jetbrains-mono-nerd-font   # or your preferred Nerd Font
+brew install --cask font-meslo-lg-nerd-font
 
 # OpenCode
 curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
@@ -325,14 +347,14 @@ curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install |
 npm install -g @fission-ai/openspec@latest
 ```
 
-### 2. Clone this repo
+#### Clone this repo
 
 ```bash
-git clone <repo-url> ~/dotfiles
+git clone https://github.com/kevin-ryan-associates/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-### 3. Stow the packages
+#### Stow the packages
 
 ```bash
 stow bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty
@@ -340,11 +362,11 @@ stow bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghost
 
 That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
 
-### 4. First Launch
+### 3. First Launch
 
 Open a new terminal. Zinit will auto-install itself and all plugins on the first run. This takes ~10-30 seconds depending on your connection. After it completes, run `reload` or open a new terminal to see the full prompt.
 
-### 5. Install AstroNvim plugins
+### 4. Install AstroNvim plugins
 
 Open Neovim — Lazy.nvim will detect the config and install all plugins on first launch:
 
@@ -354,7 +376,7 @@ nvim
 
 Mason (LSP/linter/formatter installer) will also run on first open. Let it complete before doing anything else.
 
-### 6. Authenticate OpenCode
+### 5. Authenticate OpenCode
 
 ```bash
 opencode auth
@@ -362,7 +384,7 @@ opencode auth
 
 Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles repo and never tracked.
 
-### 7. Initialize OpenSpec (per project)
+### 6. Initialize OpenSpec (per project)
 
 OpenSpec is installed globally, but needs initializing in each project where you want spec-driven workflows. From inside the project:
 
@@ -401,7 +423,7 @@ We do **not** allow-list `@fission-ai/openspec`'s postinstall in `install.sh` be
 
 The `set -euo pipefail` in `install.sh` is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
 
-### 8. Start Colima (Docker runtime)
+### 7. Start Colima (Docker runtime)
 
 Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
 
@@ -510,7 +532,8 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/opencode/` | ✅ | Config, agents, rules |
 | `~/.local/share/opencode/` | ❌ | Auth tokens — never track |
 | `~/.config/ghostty/` | ✅ | Terminal config |
-| `~/.zshrc` / `.zshenv` / `.zprofile` | ✅ | Shell config |
+| `~/.zshrc` / `.zshenv` | ✅ | Shell config |
+| `~/.zprofile` | ❌ | install.sh-managed — `brew shellenv` with runtime `brew --prefix` (architecture-conditional, like `~/.docker/config.json`) |
 | `~/.config/starship.toml` | ✅ | Prompt config |
 | `~/.config/ainative/banner.sh` | ✅ | Startup banner |
 | `~/.config/bat/` | ✅ | Syntax highlighting theme and config |

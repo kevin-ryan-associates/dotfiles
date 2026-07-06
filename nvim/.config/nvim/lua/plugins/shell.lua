@@ -5,7 +5,7 @@ return {
   opts = {
     options = {
       opt = {
-        shell = "/bin/zsh",
+        shell = vim.fn.exepath("zsh") ~= "" and vim.fn.exepath("zsh") or vim.o.shell,
         shellcmdflag = "-c",
       },
     },

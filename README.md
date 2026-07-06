@@ -540,16 +540,23 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/btop/btop.conf` | ✅ | Resource monitor config and theme |
 | `~/.config/herdr/config.toml` | ✅ | Terminal workspace multiplexer theme |
 | `~/.config/htop/htoprc` | ✅ | htop color scheme config |
-| `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (Linux) |
-| `~/Library/Application Support/lazygit/config.yml` | ✅ | Lazygit UI theme (macOS) |
-| `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (Linux) |
-| `~/Library/Application Support/lazydocker/config.yml` | ✅ | Lazydocker UI theme (macOS) |
+| `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (all platforms — lazygit reads XDG first on macOS) |
+| `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 
 ## Platform notes
 
-These configs assume macOS / Linux with the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`). If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
+Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). install.sh detects the OS via `uname -s` and branches accordingly:
+
+- **macOS**: Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font.
+- **Ubuntu**: apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Homebrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew formula; Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`.
+
+All configs use the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`) on both platforms. If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
+
+### Testing
+
+The Ubuntu install path is tested via Docker — see `test/README.md` for the harness. The macOS path is verified manually on a real Mac. The Docker test covers everything except the real Docker daemon (an unprivileged container can't run `dockerd`) and GUI app launches (Ghostty) — those are verified manually on a real Ubuntu machine.
 
 ## License
 

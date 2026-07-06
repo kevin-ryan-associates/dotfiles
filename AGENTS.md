@@ -65,6 +65,7 @@ See the Docker Desktop symlink block in install.sh for the reference pattern.
 - **Idempotent.** Running it twice produces the same state. `brew install` is free for already-installed formulae; `jq` patches must guard against duplicates; `stow -R` re-links cleanly.
 - **No secrets.** Never inline an API key, token, or password. Reference environment variables only; fetch them via the password manager CLI at shell startup (see README "Secret hygiene").
 - **Architecture-agnostic.** Use `brew --prefix` (or `brew --prefix <formula>`) rather than hardcoding `/usr/local` or `/opt/homebrew`.
+- **Cross-platform.** install.sh supports macOS (Darwin) and Ubuntu (Linux). Detect once at the top: `OS="$(uname -s)"`. Branch with `if [ "$OS" = Darwin ]` / `else` (Linux). The brew install formula lines stay shared across platforms (Homebrew works on both); branch only where a tool is fundamentally platform-specific (Colima → native Docker on Linux, casks → Linux equivalents). apt is for base prereqs + Docker on Linux only.
 - **One tool per concept.** Don't install two tools that do the same job unless one explicitly replaces the other (and there's a self-heal block for the replaced one).
 - **Stow at the end.** The final step is `stow -R <packages>`. Config symlinks should point at files that already exist.
 
@@ -118,4 +119,5 @@ False success claims are the worst AGENTS.md violation. ambient silence about a 
 - **README.md** — full project context, Stow layout, theme policy, fresh-machine setup. Read it for the big picture; AGENTS.md is for *how to make changes safely*.
 - **install.sh** — authoritative tooling + machine-state script.
 - **bootstrap.sh** — public one-liner wrapper (`curl | bash`). Clones/pulls the repo to `~/dotfiles` and `exec`s `install.sh`. Does not itself install tooling — that's install.sh's job.
+- **`test/`** — Docker-based test harness for the Ubuntu install path. **Not** a Stow package; never add it to the `stow -R` line. Same for the repo-root `.dockerignore` (Docker build artifact, not config).
 - **Top-level folders** — Stow packages. One folder per application's config.

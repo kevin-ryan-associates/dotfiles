@@ -17,8 +17,13 @@ RAW_URL="https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/b
 # Fail early with a clear message rather than letting `git clone` trigger a
 # system dialog mid-script.
 if ! command -v git >/dev/null 2>&1; then
-  echo "ERROR: git not found. Install Xcode Command Line Tools first:" >&2
-  echo "  xcode-select --install" >&2
+  echo "ERROR: git not found." >&2
+  case "$(uname -s)" in
+    Darwin)
+      echo "Install Xcode Command Line Tools first: xcode-select --install" >&2 ;;
+    Linux)
+      echo "Install git first: sudo apt-get update && sudo apt-get install -y git" >&2 ;;
+  esac
   echo "Then re-run: curl -fsSL $RAW_URL | bash" >&2
   exit 1
 fi

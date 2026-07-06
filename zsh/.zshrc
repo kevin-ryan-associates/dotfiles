@@ -28,7 +28,7 @@ path=(
 )
 
 # bun completions
-[ -s "/Users/kevinryan/.bun/_bun" ] && source "/Users/kevinryan/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # ---- Zinit (plugin manager) ----------------------------------------------
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"

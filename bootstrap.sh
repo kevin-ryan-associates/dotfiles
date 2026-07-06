@@ -3,8 +3,9 @@ set -euo pipefail
 
 # =============================================================================
 # dotfiles bootstrap script — public one-liner entry point
-# Clones (or pulls) the repo into ~/dotfiles, then execs install.sh.
-# Does NOT install tooling itself; that is install.sh's job.
+# Clones (or pulls) the repo into ~/dotfiles, then execs the native install
+# script for this OS (install-mac.sh or install-linux.sh).
+# Does NOT install tooling itself; that is the install script's job.
 #
 #   curl -fsSL https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh | bash
 # =============================================================================
@@ -43,8 +44,17 @@ else
   git clone "$REPO_URL" "$CLONE_DIR"
 fi
 
-echo "==> Handing off to install.sh..."
-# exec: replace this process so install.sh's exit code is the caller's exit
-# code. Without exec, a piped `curl | bash` would report bootstrap's exit
-# status, masking install.sh failures.
-exec bash "$CLONE_DIR/install.sh"
+echo "==> Detecting OS and handing off to native install script..."
+# exec: replace this process so the native install script's exit code is the
+# caller's exit code. Without exec, a piped `curl | bash` would report
+# bootstrap's exit status, masking install failures.
+case "$(uname -s)" in
+  Darwin)
+    exec bash "$CLONE_DIR/install-mac.sh" ;;
+  Linux)
+    exec bash "$CLONE_DIR/install-linux.sh" ;;
+  *)
+    echo "ERROR: Unsupported OS: $(uname -s)" >&2
+    echo "       Supported platforms: macOS (Darwin), Ubuntu (Linux)." >&2
+    exit 1 ;;
+esac

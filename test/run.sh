@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build and run the dotfiles test image.
-#   bash test/run.sh            # local flavor (tests install.sh against your working tree)
+#   bash test/run.sh            # local flavor (tests install-linux.sh against your working tree)
 #   bash test/run.sh published  # published flavor (the real curl|bash one-liner vs main)
 set -euo pipefail
 

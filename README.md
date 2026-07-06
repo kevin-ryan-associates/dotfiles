@@ -175,7 +175,7 @@ The custom **tokyo_night** palette uses Tokyo Night Moon colors (cyan, green, ma
 
 ### Installed CLI tools
 
-These tools are installed by `install.sh` and integrate with the Zsh configuration:
+These tools are installed by the native install scripts (`install-mac.sh` on macOS or `install-linux.sh` on Ubuntu) and integrate with the Zsh configuration:
 
 | Tool | Purpose | Zsh integration |
 |---|---|---|
@@ -286,12 +286,12 @@ This ensures your shell aliases, Zinit plugins, and environment are available in
 curl -fsSL https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh | bash
 ```
 
-This clones the repo to `~/dotfiles` (or `git pull`s if already present), then runs `install.sh`, which:
+This clones the repo to `~/dotfiles` (or `git pull`s if already present), detects the OS, and runs the native install script (`install-mac.sh` on macOS or `install-linux.sh` on Ubuntu). The install script then:
 
-- Installs Homebrew if missing (requires a one-time GUI consent dialog for Xcode Command Line Tools on a truly fresh Mac)
+- Installs Homebrew if missing (on a truly fresh Mac this requires a one-time GUI consent dialog for Xcode Command Line Tools)
 - Installs all brew formulae and casks listed in the manual alternative below
-- Configures `~/.docker/config.json` for Colima's compose plugin
-- Writes `brew shellenv` into `~/.zprofile` so `brew` is on PATH for interactive shells (the path is `brew --prefix`-dependent — `/opt/homebrew` on Apple Silicon, `/usr/local` on Intel — so it can't be a Stow package; install.sh owns it, like `~/.docker/config.json`)
+- Configures `~/.docker/config.json` for Colima's compose plugin (macOS only)
+- Writes `brew shellenv` into `~/.zprofile` so `brew` is on PATH for interactive shells (the path is `brew --prefix`-dependent — `/opt/homebrew` on Apple Silicon, `/usr/local` on Intel, `/home/linuxbrew/.linuxbrew` on Linux — so it can't be a Stow package; the install script owns it, like `~/.docker/config.json`)
 - Stows all config packages into `$HOME`
 
 Then continue to [First Launch](#3-first-launch) below.
@@ -302,7 +302,7 @@ Then continue to [First Launch](#3-first-launch) below.
 
 The one-liner above does exactly this, step by step:
 
-#### Install prerequisites
+#### macOS
 
 On macOS with Homebrew:
 
@@ -326,7 +326,7 @@ brew install kubectl helm k9s
 brew install cmake
 
 # Docker runtime (Colima — lightweight, no GUI)
-# docker-compose provides the v2 compose plugin; install.sh wires cliPluginsExtraDirs
+# docker-compose provides the v2 compose plugin; install-mac.sh wires cliPluginsExtraDirs
 # into ~/.docker/config.json so `docker compose` resolves out of the box.
 brew install colima docker docker-compose
 
@@ -344,6 +344,60 @@ brew install --cask font-meslo-lg-nerd-font
 curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
 
 # OpenSpec (spec-driven dev framework; integrates with opencode via /opsx:* commands)
+npm install -g @fission-ai/openspec@latest
+```
+
+#### Ubuntu
+
+On Ubuntu, install the apt base and native Docker first, then Homebrew on Linux, then the brew formulae:
+
+```bash
+# apt base (Homebrew prereqs + Docker + zsh)
+sudo apt-get update
+sudo apt-get install -y zsh git curl file ca-certificates build-essential procps fontconfig unzip
+sudo apt-get install -y docker.io docker-compose-v2
+
+# Homebrew on Linux
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Stow (required)
+brew install stow
+
+# Zsh ecosystem
+brew install starship eza bat fzf zoxide fd git-delta lazygit
+
+# CLI utilities
+brew install jq yq htop tree herdr
+
+# Git platform CLIs
+brew install gh glab
+
+# Kubernetes tooling
+brew install kubectl helm k9s
+
+# Build tools
+brew install cmake
+
+# 1Password CLI
+brew install --cask 1password-cli
+
+# Terminal emulator (Ghostty may need manual .deb fallback)
+brew install ghostty
+
+# Neovim
+brew install neovim node npm ripgrep
+
+# Nerd Font (manual install; Homebrew casks target macOS fonts)
+mkdir -p ~/.local/share/fonts
+curl -fsSL -o ~/.local/share/fonts/MesloLGSNerdFont-Regular.ttf \
+  "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+fc-cache -f ~/.local/share/fonts
+
+# OpenCode
+curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
+
+# OpenSpec
 npm install -g @fission-ai/openspec@latest
 ```
 
@@ -397,7 +451,7 @@ This creates `openspec/` (specs + changes) plus `.opencode/skills/openspec-*/` a
 
 #### About the `npm warn allow-scripts` message
 
-When `install.sh` runs `npm install -g @fission-ai/openspec@latest`, npm prints:
+When the install scripts run `npm install -g @fission-ai/openspec@latest`, npm prints:
 
 ```
 npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
@@ -407,9 +461,9 @@ npm warn allow-scripts Run `npm install -g --allow-scripts=@fission-ai/openspec`
 
 This is **expected and intentionally left in place**. Modern npm (v7+) blocks a package's `postinstall` script by default as a supply-chain safety guard — a global package's install scripts can run arbitrary code on your machine, so npm refuses to run them unless explicitly allow-listed.
 
-We do **not** allow-list `@fission-ai/openspec`'s postinstall in `install.sh` because:
+We do **not** allow-list `@fission-ai/openspec`'s postinstall in the install scripts because:
 
-1. **The CLI works without it.** `openspec --version`, `openspec init`, `openspec update` all function correctly with the script suppressed (verified during `install.sh` setup).
+1. **The CLI works without it.** `openspec --version`, `openspec init`, `openspec update` all function correctly with the script suppressed (verified during install script setup).
 2. **Defense in depth.** Global npm packages are vendored from a registry; running their install scripts without review is exactly what the guard exists to prevent. Running install scripts is an opt-in privilege, not a sensible default.
 3. **Decision is reversible per-user.** If a future OpenSpec release's postinstall does something you want (e.g., prints a one-time migration hint), allow it once:
    ```bash
@@ -419,9 +473,9 @@ We do **not** allow-list `@fission-ai/openspec`'s postinstall in `install.sh` be
    ```bash
    npm config set allow-scripts=@fission-ai/openspec --location=user
    ```
-   Re-running `bash install.sh` will continue to work either way — the warning is informational, not an error.
+   Re-running `bash bootstrap.sh` will continue to work either way — the warning is informational, not an error.
 
-The `set -euo pipefail` in `install.sh` is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
+The `set -euo pipefail` in the install scripts is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
 
 ### 7. Start Colima (Docker runtime)
 
@@ -533,7 +587,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.local/share/opencode/` | ❌ | Auth tokens — never track |
 | `~/.config/ghostty/` | ✅ | Terminal config |
 | `~/.zshrc` / `.zshenv` | ✅ | Shell config |
-| `~/.zprofile` | ❌ | install.sh-managed — `brew shellenv` with runtime `brew --prefix` (architecture-conditional, like `~/.docker/config.json`) |
+| `~/.zprofile` | ❌ | install script-managed — `brew shellenv` with runtime `brew --prefix` (architecture-conditional, like `~/.docker/config.json`) |
 | `~/.config/starship.toml` | ✅ | Prompt config |
 | `~/.config/ainative/banner.sh` | ✅ | Startup banner |
 | `~/.config/bat/` | ✅ | Syntax highlighting theme and config |
@@ -547,10 +601,12 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 
 ## Platform notes
 
-Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). install.sh detects the OS via `uname -s` and branches accordingly:
+Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). `bootstrap.sh` detects the OS via `uname -s` and dispatches to the native install script:
 
-- **macOS**: Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font.
-- **Ubuntu**: apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Homebrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew formula; Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`.
+- **`install-mac.sh`**: Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font.
+- **`install-linux.sh`**: apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Homebrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew formula; Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`.
+
+Both install scripts source `brew-packages.sh` for the shared brew formula list so the tool inventory stays in sync.
 
 All configs use the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`) on both platforms. If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
 

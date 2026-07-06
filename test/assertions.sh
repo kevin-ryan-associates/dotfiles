@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Test matrix for the dotfiles install. Sourced/run inside the container after
-# install.sh (or bootstrap.sh) has converged. Any failure exits non-zero,
+# install-linux.sh (or bootstrap.sh) has converged. Any failure exits non-zero,
 # failing the Docker build. See test/README.md for the full matrix and the
 # things this deliberately does NOT test (real Docker daemon, GUI launches).
 set -euo pipefail
@@ -66,8 +66,8 @@ zsh -i -c 'true' 2>/dev/null
 nvim --headless -c 'qa' 2>/dev/null || \
   nvim --headless -c 'lua print("config ok")' -c 'qa'
 
-# 11. install.sh idempotent — second run exits 0
-bash "$HOME/dotfiles/install.sh"
+# 11. install-linux.sh idempotent — second run exits 0
+bash "$HOME/dotfiles/install-linux.sh"
 
 # 12. Nerd Font installed
 fc-list 2>/dev/null | grep -iq meslo

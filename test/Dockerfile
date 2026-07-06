@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # Test harness for the Ubuntu install path. Two flavors:
-#   local     — COPYs the repo, runs install.sh directly (fast iteration on local changes)
+#   local     — COPYs the repo, runs install-linux.sh directly (fast iteration on local changes)
 #   published — runs the real curl|bash one-liner against main (release verification)
 #
 # Build/run via: bash test/run.sh          (local)
@@ -12,7 +12,7 @@
 ARG UBUNTU_VERSION=24.04
 
 # =============================================================================
-# Base stage: apt prereqs + non-root user. Independent of install.sh — just
+# Base stage: apt prereqs + non-root user. Independent of the install script — just
 # prepares an image that can run Homebrew's installer and bootstrap.sh.
 # =============================================================================
 FROM ubuntu:${UBUNTU_VERSION} AS base
@@ -37,13 +37,13 @@ WORKDIR /home/dotfiles
 ENV HOME=/home/dotfiles
 
 # =============================================================================
-# Flavor 1: local-state — tests install.sh against the working tree.
+# Flavor 1: local-state — tests install-linux.sh against the working tree.
 # The repo is COPY'd in (no .git, so bootstrap's clone/pull is moot); we run
-# install.sh directly. This is the fast loop for testing install.sh changes.
+# install-linux.sh directly. This is the fast loop for testing linux changes.
 # =============================================================================
 FROM base AS local
 COPY --chown=dotfiles:dotfiles . /home/dotfiles/dotfiles
-RUN bash /home/dotfiles/dotfiles/install.sh
+RUN bash /home/dotfiles/dotfiles/install-linux.sh
 RUN bash /home/dotfiles/dotfiles/test/assertions.sh
 # Default interactive shell — `docker run -it dotfiles-test:local` drops into zsh
 # with the full configured environment (starship, plugins, aliases).
@@ -51,7 +51,7 @@ CMD ["zsh"]
 
 # =============================================================================
 # Flavor 2: published-contract — tests the real public one-liner against main.
-# bootstrap.sh clones ~/dotfiles over HTTPS, then execs install.sh. Use this
+# bootstrap.sh clones ~/dotfiles over HTTPS, then execs install-linux.sh. Use this
 # for release verification (post-push); requires test/ to be on main already.
 # =============================================================================
 FROM base AS published

@@ -30,9 +30,9 @@ problem for this one spec, in the frame the vision already established.
 ## Use the template
 
 The skeleton for this document is the template at
-`.opencode/skills/sdd-discovery-authoring/discovery-template.md`. Read it, fill
-every section, and delete the guidance comments as you go. Do not restructure it,
-rename sections, or reorder them — the fixed shape is what lets Specify and
+`~/.config/opencode/skills/sdd-discovery-authoring/discovery-template.md`. Read it,
+fill every section, and delete the guidance comments as you go. Do not restructure
+it, rename sections, or reorder them — the fixed shape is what lets Specify and
 Evaluate rely on the document. The sections below explain how to fill each part.
 
 When the document is complete and passes the Definition of Done below, write it to
@@ -75,8 +75,10 @@ system yet exists (pure greenfield); never omit the rest.
    the out-of-scope explicitly; it stops the plan stage over-reaching. Flag any
    **one-way doors** — decisions expensive or impossible to reverse — so
    downstream stages spend their care where it counts.
-7. **Open questions** — everything still unresolved that Specify will need.
-   Unanswered is honest; silently resolved by assumption is not.
+7. **Open questions** — everything still unresolved that Specify will need, each
+   written as a `[NEEDS CLARIFICATION: <question>]` marker (the shared marker
+   defined in the `sdd` skill). Unanswered is honest; silently resolved by
+   assumption is not.
 
 ## Writing the epistemic ledger
 
@@ -117,7 +119,8 @@ Before the document is handed to Specify, verify:
       document.
 - [ ] The document situates the spec within the product vision and does not
       restate or contradict product-level context.
-- [ ] Open questions are captured, not silently resolved.
+- [ ] Open questions are captured as `[NEEDS CLARIFICATION]` markers, not
+      silently resolved.
 
 The document is done when every box holds. Any that fail send it back into
 discovery, not forward into Specify.

@@ -69,7 +69,8 @@
 
 ## Open questions
 
-<!-- Everything still unresolved that Specify will need. Unanswered is honest;
-     silently resolved by assumption is not. -->
+<!-- Everything still unresolved that Specify will need, as
+     [NEEDS CLARIFICATION: <question>] markers. Unanswered is honest; silently
+     resolved by assumption is not. -->
 -
 

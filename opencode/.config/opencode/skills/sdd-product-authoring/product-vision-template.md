@@ -9,7 +9,7 @@
 -->
 
 - **Date:** <YYYY-MM-DD>
-- **Status:** draft   <!-- draft | ready -->
+- **Status:** draft   <!-- draft | ready-for-discovery -->
 
 ## Consumer
 

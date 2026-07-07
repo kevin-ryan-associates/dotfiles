@@ -23,10 +23,11 @@ by length. A vision that could describe any product describes none.
 ## Use the template
 
 The skeleton for this document is the template at
-`.opencode/skills/sdd-product-authoring/product-vision-template.md`. Read it, fill
-every section, and delete the guidance comments as you go. Do not restructure it,
-rename sections, or reorder them — the fixed shape is what lets every downstream
-stage rely on it. The sections below explain how to fill each part.
+`~/.config/opencode/skills/sdd-product-authoring/product-vision-template.md`. Read
+it, fill every section, and delete the guidance comments as you go. Do not
+restructure it, rename sections, or reorder them — the fixed shape is what lets
+every downstream stage rely on it. The sections below explain how to fill each
+part.
 
 When the document is complete and passes the Definition of Done below, write it to
 `sdd/product-vision.md` — at the root of the sdd tree, not inside a spec directory,

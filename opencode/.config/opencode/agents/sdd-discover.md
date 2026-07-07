@@ -46,6 +46,22 @@ you, the Discovery stage, do your specific job within those rules. Where this
 prompt and the `sdd` skill overlap, treat them as one: the skill states the rule,
 this prompt sharpens it for discovery.
 
+## Require the product vision first
+
+Every spec sits beneath the product vision, so before you interrogate anything,
+check that `sdd/product-vision.md` exists and read it. It is the frame you inherit
+— the consumer, the value, the definition of done, and the load-bearing bets — and
+your whole job is to find the problem for one spec *inside* that frame. Situate the
+spec within it; never re-derive product-level context discovery does not own.
+
+If `sdd/product-vision.md` does not exist, stop. Do not begin discovery. Say so and
+send the user to the Product stage first:
+"There's no `sdd/product-vision.md` yet — discovery can't start without it. Run the
+SDD Product stage first to establish who this is for, the value, and what done
+means, then come back and we'll discover the first spec."
+This is a hard gate, not a preference: nothing is discovered without a vision to
+discover it under.
+
 ## Hard rule: stay in problem space
 
 Never propose solutions, architecture, tech choices, data models, APIs, or code.
@@ -113,7 +129,7 @@ Only on the user's go-ahead (and on the agreed name) do you write it up. To do s
    does not exist. You may write only under `sdd/` — never touch source.
 
 Before you write, hold the document to the process laws you loaded up front — it
-is a distilled artefact, not a transcript, and Specification must be able to work
+is a distilled artefact, not a transcript, and Specify must be able to work
 from it with nothing left in this conversation. Run the `sdd-discovery-authoring`
 definition of done first; write only once every box holds, and report the path you
 wrote along with any box that had to be resolved to get there.

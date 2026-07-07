@@ -30,9 +30,9 @@ downstream inherits that vision as the reason it is allowed to exist.
   load-bearing bets) below which building must not start. Produces
   `product-vision.md`, once per project. Blocks Discovery.
 - **Stage 2 — Discovery** — understand the problem for one spec before it is
-  designed or built. Produces `discovery.md`. Consumed by Specification.
+  designed or built. Produces `discovery.md`. Consumed by Specify.
 
-Later stages — Specification, Planning, and onward — are documented here as they
+Later stages — Specify, Plan, and onward — are documented here as they
 are implemented. Until a stage appears in this skill, it is not part of the
 process.
 
@@ -120,7 +120,7 @@ open question, a topic, or a rough brief — and, when a system already exists,
 from reading that codebase as evidence of what is true today.
 
 **Output.** `sdd/<spec-name>/discovery.md`: the distilled understanding the
-Specification stage will build on. Discovery names the spec, and that name
+Specify stage will build on. Discovery names the spec, and that name
 becomes its directory.
 
 **Boundary.** Discovery never proposes solutions, architecture, tech choices, or

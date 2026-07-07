@@ -132,6 +132,7 @@ export BAT_THEME="tokyonight_moon"
 
 # ---- Tool-specific env ----------------------------------------------------
 export OPENSPEC_TELEMETRY=0   # disable OpenSpec anonymous usage stats
+export OPENCODE_ENABLE_EXA=1  # enable opencode's Exa-backed websearch tool (gated at tool registration, not permission)
 
 # ---- Editor ---------------------------------------------------------------
 export EDITOR=nvim

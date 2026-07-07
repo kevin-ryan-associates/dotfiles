@@ -19,7 +19,8 @@ permission:
     "*": deny
     "sdd/**": allow
   bash: deny
-  webfetch: deny
+  webfetch: allow
+  websearch: allow
   task: deny
   skill:
     "*": deny

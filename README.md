@@ -440,7 +440,7 @@ Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles re
 
 #### Enable websearch (optional)
 
-OpenCode's `websearch` permission key (e.g. `websearch: allow` in SDD agent frontmatters like `sdd-discover` and `sdd-product`) is valid but a **no-op unless the websearch tool is actually registered**. The websearch tool is Exa-backed; opencode only registers it when either the OpenCode provider is used as the model backend, or the `OPENCODE_ENABLE_EXA` environment variable is set to a truthy value (e.g. `1`). Without it, agents truthfully report "websearch permission present in config but not matched by a tool I can actually call in this environment" — the symptom this repo's SDD agents were showing before this env var was wired in.
+OpenCode's `websearch` permission key (e.g. `websearch: allow` in SDD agent frontmatters like `sdd-02-discover` and `sdd-01-product`) is valid but a **no-op unless the websearch tool is actually registered**. The websearch tool is Exa-backed; opencode only registers it when either the OpenCode provider is used as the model backend, or the `OPENCODE_ENABLE_EXA` environment variable is set to a truthy value (e.g. `1`). Without it, agents truthfully report "websearch permission present in config but not matched by a tool I can actually call in this environment" — the symptom this repo's SDD agents were showing before this env var was wired in.
 
 No API key is required — the tool connects directly to Exa AI's hosted MCP service without authentication. This repo sets `OPENCODE_ENABLE_EXA=1` in `.zshrc` (see "Tool-specific env" block) so any agent declaring `websearch: allow` actually gets the tool exposed at runtime. To disable websearch again, unset the variable in your shell and restart opencode:
 

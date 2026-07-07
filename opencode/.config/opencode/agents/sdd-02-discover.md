@@ -1,5 +1,5 @@
 ---
-name: SDD Discover
+name: SDD-2 Discover
 description: >-
   Discovery interviewer. Runs before specification or any implementation work
   begins. Interrogates the user to extract intent, constraints, scope, and

@@ -1,5 +1,5 @@
 ---
-name: SDD Product
+name: SDD-1 Product
 description: >-
   Product vision setter. Runs once per project, before discovery of any spec is
   allowed to begin. Establishes the floor below which building must not start:

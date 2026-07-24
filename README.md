@@ -172,6 +172,10 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `htop` | Interactive process viewer | Better `top` |
 | `btop` | Resource monitor | TUI system monitor with graphs |
 | `tree` | Directory tree listing | Hierarchical directory views |
+| `glow` | Terminal markdown renderer | `glow README.md` |
+| `bandwhich` | Live network bandwidth monitor | `sudo bandwhich` (needs sudo for raw-socket capture on macOS) |
+| `dust` | `du` successor (Rust) | `dust`, `dust -d 2` for depth |
+| `hunk` | Review-first diff viewer for agent changesets | `hunk diff`, `hunk show` — complements `delta` (pager) and `lazygit` (TUI) |
 | `1password-cli` | 1Password secrets | Fetch secrets via `op read` in `.zshrc` |
 | `herdr` | Agent multiplexer | Terminal workspace manager |
 | `kubectl` | Kubernetes CLI | Aliased to `k` |
@@ -316,13 +320,15 @@ chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_befor
 
 For reference, the package list lives in `.chezmoidata.yaml` at the source root. It currently prescribes:
 
-**Brew formulae (both platforms):** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr` (CLI utilities), `gh glab` (Git platform CLIs), `kubectl helm k9s` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
+**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk` (CLI utilities), `gh glab` (Git platform CLIs), `kubectl helm k9s` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
 
-**macOS only:** `colima docker docker-compose` plus casks `1password-cli ghostty font-meslo-lg-nerd-font`. `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
+**Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 
-**Linux only:** `apt` installs `zsh git curl file ca-certificates build-essential procps fontconfig unzip` and `docker.io docker-compose-v2`; the MesloLGS Nerd Font `.ttf` is downloaded into `~/.local/share/fonts` (casks target macOS fonts only); `chsh -s zsh` runs at the end since Ubuntu doesn't ship zsh as the login shell.
+**npm globals:** `@fission-ai/openspec@latest`.
 
-**Both platforms:** openCode installer (`curl | bash -- --no-modify-path`); `npm install -g @fission-ai/openspec@latest`; `bat cache --build`.
+**Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); `bat cache --build`.
+
+> Linux (Ubuntu) support is retired for now — `chezmoi apply` fails fast with an explicit message on non-macOS. The Linux branch can be re-added later by reintroducing an `{{- else if eq .chezmoi.os "linux" }}` arm in `run_once_before_install-packages.sh.tmpl` and a `linux:` section in `.chezmoidata.yaml`.
 
 ### 3. First Launch
 
@@ -528,22 +534,21 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
-| `README.md`, `AGENTS.md`, `test/`, `LICENSE` | tracked in source, ignored from deploy | Repo metadata / test harness — see `.chezmoiignore` |
+| `README.md`, `AGENTS.md`, `LICENSE` | tracked in source, ignored from deploy | Repo metadata — see `.chezmoiignore` |
 
 ## Platform notes
 
-Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). `chezmoi init` doesn't need OS dispatch — chezmoi detects the OS at apply time via `.chezmoi.os`. Per-platform behavior:
+Supported platform: **macOS** (Darwin). `chezmoi init` doesn't need OS dispatch — chezmoi detects the OS at apply time via `.chezmoi.os`. Behavior:
 
 - **macOS:** Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font. `dot_zprofile.tmpl`'s `stat` will find `/opt/homebrew/bin/brew` (Apple Silicon) or `/usr/local/bin/brew` (Intel) and emit the appropriate `eval "$(... shellenv)"` line — no arch branches in source.
-- **Linux:** apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Linuxbrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew cask (`op --version` needs `unzip` apt package); Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`. `chsh -s zsh` at the end since Ubuntu's default login shell is bash.
 
-Both paths are encoded in a single template (`run_once_before_install-packages.sh.tmpl`) with `{{ if eq .chezmoi.os "darwin" }}` / `{{ else if eq .chezmoi.os "linux" }}` branches. The shared formula list lives in `.chezmoidata.yaml` and is the single source of truth — edits happen in one file, not across `brew-packages.sh` *and* the README install blocks *and* the install scripts (the previous docs-sync hazard).
+The install path is encoded in a single template (`run_once_before_install-packages.sh.tmpl`) with an `{{ if eq .chezmoi.os "darwin" }}` arm and a `{{ else }}` arm that fails fast with an explicit message on non-macOS. The shared formula/cask list lives in `.chezmoidata.yaml` and is the single source of truth — edits happen in one file, not across `brew-packages.sh` *and* the README install blocks *and* the install scripts (the previous docs-sync hazard).
 
-All configs use the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`) on both platforms. If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
+All configs use the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`). If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
 
 ### Testing
 
-The Ubuntu apply path is tested via Docker — see `test/README.md` for the harness. The macOS path is verified manually on a real Mac. The Docker test covers everything except the real Docker daemon (an unprivileged container can't run `dockerd`) and GUI app launches (Ghostty) — those are verified manually on a real Ubuntu machine.
+The macOS path is verified manually on a real Mac. (A Docker-based harness for the Ubuntu apply path previously lived in `test/`; it has been retired along with the Linux install path and can be re-added when Linux support returns.)
 
 ## License
 

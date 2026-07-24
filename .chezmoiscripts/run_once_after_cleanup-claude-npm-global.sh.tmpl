@@ -1,0 +1,51 @@
+{{- /*
+=============================================================================
+cleanup-claude-npm-global — self-heal for the deprecated npm-global
+@anthropic-ai/claude-code install that this repo replaced with the native
+installer (curl https://claude.ai/install.sh | bash).
+
+Anthropic deprecated the npm distribution of Claude Code in favor of the
+native installer. Machines that previously installed via
+`npm install -g @anthropic-ai/claude-code` have a dead npm-global install
+at /usr/local/lib/node_modules/@anthropic-ai/claude-code/ plus a shadowed
+/usr/local/bin/claude symlink. The native installer writes to
+~/.local/bin/claude (already first in dot_zshrc's PATH), so the npm-global
+binary is unreachable but still occupies disk and shadows in `which -a`.
+
+Per AGENTS.md self-heal convention:
+  1. No-op on fresh machines (guard on stale state, not blanket remove).
+  2. Only touch the npm-global install — never the native one at
+     ~/.local/bin/claude or ~/.local/share/claude/.
+  3. Never abort the apply when npm can't uninstall (no `set -e`; the
+     `|| echo "hint"` pattern prints a copy-pasteable command for a
+     non-interactive apply under no-TTY).
+  4. Print the manual equivalent in the hint so a non-interactive apply
+     leaves the user a copy-pasteable command.
+
+`run_once_after_` semantics:
+  • `once_`  — runs only when the script's source content has not yet run
+               successfully (idempotent across applies until this script
+               itself changes).
+  • `after_` — runs during step 6 of the application order, AFTER file
+               targets are written and AFTER `run_once_before_install-packages`
+               has converged the native install. This guarantees the native
+               binary is in place at ~/.local/bin/claude before we remove
+               the npm-global shim.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# No `set -e` — npm uninstall failure under no-TTY must not crash the apply.
+
+echo "==> Cleaning up deprecated npm-global @anthropic-ai/claude-code (if present)..."
+if [ -d "/usr/local/lib/node_modules/@anthropic-ai/claude-code" ] || \
+   [ -L "/usr/local/bin/claude" ]; then
+  npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || \
+    echo "  npm uninstall failed (no TTY?); run manually: npm uninstall -g @anthropic-ai/claude-code"
+  echo "    (The native install at ~/.local/bin/claude is untouched — that's the active one.)"
+else
+  echo "  No deprecated npm-global claude-code install to clean up."
+fi
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

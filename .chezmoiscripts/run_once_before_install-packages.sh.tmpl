@@ -91,6 +91,9 @@ rm -f /tmp/opencode-install.sh
 echo "==> Installing OpenSpec (spec-driven dev framework)..."
 npm install -g {{ range .packages.npm_global }}{{ . }} {{ end }}
 
+echo "==> Installing Claude Code (native installer — auto-updates in background)..."
+curl -fsSL https://claude.ai/install.sh | bash
+
 echo "==> Building bat theme cache..."
 bat cache --build
 

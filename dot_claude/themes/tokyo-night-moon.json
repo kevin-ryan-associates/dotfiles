@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-theme.json",
+  "name": "Tokyo Night Moon",
+  "base": "dark",
+  "overrides": {
+    "claude": "#82aaff",
+    "claudeShimmer": "#3d59a1",
+    "text": "",
+    "inverseText": "#222436",
+    "secondaryText": "#737aa2",
+    "subtle": "#636da6",
+    "suggestion": "#82aaff",
+    "permission": "#82aaff",
+    "remember": "#86e1fc",
+    "planMode": "#7aa2f7",
+
+    "diffAdded": "#1b2a3b",
+    "diffRemoved": "#2d1f23",
+    "diffAddedText": "#c3e88d",
+    "diffRemovedText": "#ff757f",
+    "diffContext": "#636da6",
+
+    "userMessageBackground": "#1f2335",
+    "userMessageText": "",
+    "claudeMessageBackground": "#1f2335",
+    "claudeMessageText": "",
+    "toolMessageBackground": "#1f2335",
+    "toolMessageText": "#737aa2",
+
+    "syntaxComment": "#636da6",
+    "syntaxKeyword": "#c099ff",
+    "syntaxFunction": "#82aaff",
+    "syntaxVariable": "#c8d3f5",
+    "syntaxString": "#c3e88d",
+    "syntaxNumber": "#ff966c",
+    "syntaxType": "#ffc777",
+    "syntaxOperator": "#86e1fc",
+    "syntaxPunctuation": "#a9b1d6",
+
+    "thinkingOff": "#3b4261",
+    "thinkingMinimal": "#636da6",
+    "thinkingLow": "#7aa2f7",
+    "thinkingMedium": "#82aaff",
+    "thinkingHigh": "#c099ff",
+    "thinkingXhigh": "#ff757f",
+
+    "bashMode": "#86e1fc",
+    "success": "#c3e88d",
+    "error": "#ff757f",
+    "warning": "#ffc777",
+    "celebration": "#ff966c"
+  }
+}

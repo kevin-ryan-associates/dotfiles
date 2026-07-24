@@ -1,0 +1,58 @@
+{{- /*
+=============================================================================
+configure-claude-theme — idempotent ~/.claude/settings.json theme patcher
+
+Claude Code (Anthropic's terminal AI coding assistant) loads its theme
+selection from ~/.claude/settings.json. The `theme` key accepts a built-in
+preset name ("dark", "light", "dark-daltonized", "light-daltonized",
+"dark-ansi", "light-ansi", "auto") or a custom theme reference of the form
+"custom:<slug>" where <slug> is the filename in ~/.claude/themes/ without
+the .json extension. Selecting the theme stores "custom:tokyo-night-moon"
+here; the theme file itself is deployed as a plain chezmoi file target at
+dot_claude/themes/tokyo-night-moon.json → ~/.claude/themes/tokyo-night-moon.json.
+
+~/.claude/settings.json is NOT fully owned by the repo — Claude Code writes
+runtime keys (hooks, permissions, env, statusLine, autoCompactEnabled) and
+the user edits it interactively via /config. A templated file target would
+clobber those keys; this jq merge preserves every existing field and only
+sets the `theme` scalar to "custom:tokyo-night-moon".
+
+Uses `run_onchange_before_` semantics:
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash), so re-applies don't churn ~/.claude/settings.json's
+    mtime once the patch is stable.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.claude/settings.json is NOT
+    a chezmoi-managed file; this script is the only writer for the `theme`
+    key. The theme JSON file is written in step 5 as a normal chezmoi file
+    target; the ordering here only matters relative to other run-scripts
+    that might read this file's output.
+
+No-op on a fresh machine where claude code has never been run (the
+~/.claude/ dir won't exist yet — claude creates it on first launch). The
+user runs `claude` once to initialize, then re-runs `chezmoi apply` to
+apply the theme selection. Same friendly-fail-mode pattern AGENTS.md
+describes for dot_zprofile on a machine where brew isn't installed yet.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+
+# No-op if claude code has never been run (dir or settings file doesn't exist).
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "==> Claude Code settings not found at $SETTINGS_FILE — claude not initialized yet."
+  echo "    Run 'claude' once to initialize, then re-run 'chezmoi apply' to select the theme."
+  exit 0
+fi
+
+echo "==> Selecting Tokyo Night Moon theme for Claude Code (~/.claude/settings.json)..."
+tmp=$(mktemp)
+jq --arg theme "custom:tokyo-night-moon" '.theme = $theme' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+echo "    theme = custom:tokyo-night-moon (other keys preserved — hooks, permissions, env, etc.)"
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

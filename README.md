@@ -17,6 +17,7 @@ Currently tracking:
 - **`git`** — Git config with Tokyo Night delta diff colors
 - **`lazydocker`** — TUI Docker client with Tokyo Night colors
 - **`pi`** — [Pi](https://pi.dev/) open-source AI coding harness with Tokyo Night Moon theme
+- **`claude`** — [Claude Code](https://claude.com/product/claude-code) terminal AI coding assistant with Tokyo Night Moon theme
 - **`colima`** — Docker runtime (macOS; replaces Docker Desktop, no GUI)
 
 ## Why this exists
@@ -186,6 +187,7 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `colima` | Docker runtime (VM-based, macOS) | Replaces Docker Desktop; `colima start/stop` |
 | `openspec` | Spec-driven dev framework | Native opencode slash commands (`/opsx:propose`, etc.); telemetry opt-out via `OPENSPEC_TELEMETRY=0` |
 | `pi` | Open-source AI coding harness | `pi` to start; themed to Tokyo Night Moon via `~/.pi/agent/themes/tokyo-night-moon.json` (selected by jq-merge in `~/.pi/agent/settings.json`) |
+| `claude` | Anthropic's terminal AI coding assistant | `claude` to start; themed to Tokyo Night Moon via `~/.claude/themes/tokyo-night-moon.json` (selected by jq-merge in `~/.claude/settings.json`) |
 
 ### Banner
 
@@ -216,6 +218,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 | **delta** | Tokyo Night Moon diff colors in `~/.config/git/config` |
 | **hunk** | Custom theme inheriting `tokyo-night`; Moon-palette overrides for chrome + `syntax_scopes` in `~/.config/hunk/config.toml` |
 | **pi** | Custom JSON theme `tokyo-night-moon` in `~/.pi/agent/themes/`, selected via jq-merge patch to `~/.pi/agent/settings.json` |
+| **claude** | Custom JSON theme `tokyo-night-moon` in `~/.claude/themes/`, selected via jq-merge patch to `~/.claude/settings.json` (preserves existing hooks block) |
 | **Zsh banner** | ANSI colors mapped to Tokyo Night Moon palette |
 
 ## Neovim
@@ -330,7 +333,7 @@ For reference, the package list lives in `.chezmoidata.yaml` at the source root.
 
 **npm globals:** `@fission-ai/openspec@latest`, `@earendil-works/pi-coding-agent@latest`.
 
-**Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); `bat cache --build`.
+**Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
 
 > Linux (Ubuntu) support is retired for now — `chezmoi apply` fails fast with an explicit message on non-macOS. The Linux branch can be re-added later by reintroducing an `{{- else if eq .chezmoi.os "linux" }}` arm in `run_once_before_install-packages.sh.tmpl` and a `linux:` section in `.chezmoidata.yaml`.
 
@@ -542,6 +545,11 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.pi/agent/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-pi-theme.sh.tmpl`) | jq merge only sets the `theme` key to `tokyo-night-moon`; preserves user keys (provider, model, thinking level) |
 | `~/.pi/agent/auth.json`, `~/.pi/agent/trust.json` | ❌ | Pi runtime auth/trust state — never track |
 | `~/.pi/agent/sessions/` | ❌ | Pi session history — runtime |
+| `~/.claude/themes/tokyo-night-moon.json` | ✅ | Claude Code theme: custom Tokyo Night Moon, ~40 token overrides on `dark` base |
+| `~/.claude/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-claude-theme.sh.tmpl`) | jq merge only sets the `theme` key to `custom:tokyo-night-moon`; preserves existing hooks block wiring `herdr-agent-state.sh` |
+| `~/.claude.json` | ❌ | Claude Code global config (OAuth, MCP, trust state) — never track |
+| `~/.claude/sessions/`, `projects/`, `shell-snapshots/`, `history.jsonl` | ❌ | Claude Code runtime session state — never track |
+| `~/.claude/hooks/herdr-agent-state.sh` | ⚠️ untracked but referenced by settings.json | Wires herdr + claude session state; should be tracked as a follow-up task |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 | `README.md`, `AGENTS.md`, `LICENSE` | tracked in source, ignored from deploy | Repo metadata — see `.chezmoiignore` |
 

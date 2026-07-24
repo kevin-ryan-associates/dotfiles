@@ -98,9 +98,15 @@ bat cache --build
 # Ubuntu install path — apt base + Docker, Linuxbrew for UX tooling
 # =============================================================================
 
+# Silence debconf/dpkg interactive prompts (config-file choices, service-restart
+# dialogs) so the install runs unattended given a primed sudo timestamp
+# (`sudo -v` before `chezmoi apply`).
+export DEBIAN_FRONTEND=noninteractive
+APT_NONINTERACTIVE_OPTS="-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
+
 echo "==> Installing apt base (Homebrew prereqs + sudo + zsh)..."
 sudo apt-get update
-sudo apt-get install -y {{ range .linux.apt }}{{ . }} {{ end }}
+sudo apt-get install -y ${APT_NONINTERACTIVE_OPTS} {{ range .linux.apt }}{{ . }} {{ end }}
 
 echo "==> Checking for Homebrew..."
 if ! command -v brew >/dev/null 2>&1; then
@@ -136,7 +142,7 @@ echo "==> Installing Docker (native Linux runtime)..."
 # Colima is macOS-only. On Linux, Docker runs natively. docker-compose-v2
 # provides the `docker compose` plugin; resolves natively (no ~/.docker/config.json
 # cliPluginsExtraDirs wiring needed, unlike macOS Colima).
-sudo apt-get install -y {{ range .linux.apt_docker }}{{ . }} {{ end }}
+sudo apt-get install -y ${APT_NONINTERACTIVE_OPTS} {{ range .linux.apt_docker }}{{ . }} {{ end }}
 sudo usermod -aG docker "$(id -un)" 2>/dev/null || true
 echo "  Note: re-login (or 'newgrp docker') to use docker without sudo."
 

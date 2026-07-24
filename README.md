@@ -279,6 +279,16 @@ Then continue to [First Launch](#3-first-launch) below.
 
 > **First apply on a fresh machine, friendly fail mode:** if you skip `chezmoi init` and run a raw `chezmoi apply` against a machine that doesn't have brew installed yet, `dot_zprofile.tmpl`'s `stat` probes all four candidate brew paths, finds none, and renders an empty `~/.zprofile`. A subsequent `chezmoi apply` (after installing brew) fills it in. No apply fails on a missing binary.
 
+> **Linux — run `sudo -v` first for a non-interactive apply.** The Ubuntu install path makes several `sudo` calls (apt base, docker, `usermod`, `chsh -s zsh`). Each would otherwise prompt for your password independently. Cache sudo credentials once before applying so the apply runs uninterrupted:
+>
+> ```bash
+> sudo -v && chezmoi init --apply kevin-ryan-associates/dotfiles   # fresh machine
+> # or on an existing checkout:
+> sudo -v && chezmoi apply
+> ```
+>
+> The install script also sets `DEBIAN_FRONTEND=noninteractive` and passes `--force-confdef --force-confold` to apt so dpkg config-file and service-restart dialogs auto-resolve without prompting. The single `sudo -v` timestamp (~5-15 min default on Ubuntu) comfortably covers the whole apply.
+
 ### 2. Manual alternative (if you prefer not to pipe to bash)
 
 The one-liner above does exactly this, step by step:

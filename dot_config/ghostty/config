@@ -4,3 +4,7 @@ font-size = 14
 
 # Tokyo Night theme (built-in)
 theme = TokyoNight Moon
+# Pin the theme's background explicitly so it's not solely a function of the
+# bundled theme file that ships with the Ghostty app — survives upstream theme
+# revisions. Value matches the bundled TokyoNight Moon `background`.
+background = #222436

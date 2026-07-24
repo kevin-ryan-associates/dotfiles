@@ -175,7 +175,7 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `glow` | Terminal markdown renderer | `glow README.md` |
 | `bandwhich` | Live network bandwidth monitor | `sudo bandwhich` (needs sudo for raw-socket capture on macOS) |
 | `dust` | `du` successor (Rust) | `dust`, `dust -d 2` for depth |
-| `hunk` | Review-first diff viewer for agent changesets | `hunk diff`, `hunk show` — complements `delta` (pager) and `lazygit` (TUI) |
+| `hunk` | Review-first diff viewer for agent changesets | `hunk diff`, `hunk show` — complements `delta` (pager) and `lazygit` (TUI); themed to Tokyo Night Moon via `~/.config/hunk/config.toml` |
 | `1password-cli` | 1Password secrets | Fetch secrets via `op read` in `.zshrc` |
 | `herdr` | Agent multiplexer | Terminal workspace manager |
 | `kubectl` | Kubernetes CLI | Aliased to `k` |
@@ -212,6 +212,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 | **lazygit** | Tokyo Night Moon colors in `config.yml` |
 | **lazydocker** | Tokyo Night Moon best-effort colors |
 | **delta** | Tokyo Night Moon diff colors in `~/.config/git/config` |
+| **hunk** | Custom theme inheriting `tokyo-night`; Moon-palette overrides for chrome + `syntax_scopes` in `~/.config/hunk/config.toml` |
 | **Zsh banner** | ANSI colors mapped to Tokyo Night Moon palette |
 
 ## Neovim
@@ -529,6 +530,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/bat/` | ✅ | Syntax highlighting theme and config |
 | `~/.config/btop/btop.conf` | ✅ | Resource monitor config and theme |
 | `~/.config/herdr/config.toml` | ✅ | Terminal workspace multiplexer theme |
+| `~/.config/hunk/config.toml` | ✅ | Hunk theme: custom Tokyo Night Moon, chrome + syntax scopes (hunk's own `state.json` in the same dir is untracked runtime state) |
 | `~/.config/htop/htoprc` | ✅ | htop color scheme config |
 | `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (all platforms — lazygit reads XDG first on macOS) |
 | `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |

@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Test matrix for the dotfiles install. Sourced/run inside the container after
-# install-linux.sh (or bootstrap.sh) has converged. Any failure exits non-zero,
-# failing the Docker build. See test/README.md for the full matrix and the
-# things this deliberately does NOT test (real Docker daemon, GUI launches).
+# Test matrix for the dotfiles chezmoi apply. Sourced/run inside the container
+# after `chezmoi apply` has converged. Any failure exits non-zero, failing the
+# Docker build. See test/README.md for the full matrix and the things this
+# deliberately does NOT test (real Docker daemon, GUI launches).
 set -euo pipefail
 trap 'echo "==> ASSERTION FAILED (line $LINENO)" >&2' ERR
 
-# The assertions RUN is a non-login, non-interactive bash shell. A real user's
-# zsh login shell sources ~/.zprofile (brew shellenv) and ~/.zshrc (user bins).
-# Mirror that PATH setup here so assertions see the installed tools. This block
-# is test-only — it doesn't affect the real user environment.
+# The assertions RUN layer is a non-login, non-interactive bash shell. A real
+# user's zsh login shell sources ~/.zprofile (brew shellenv, rendered by
+# dot_zprofile.tmpl) and ~/.zshrc (user bins). Mirror that PATH setup here so
+# assertions see the installed tools. This block is test-only — it doesn't
+# affect the real user environment.
 export TERM="${TERM:-xterm}"
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
@@ -24,14 +25,17 @@ fi
 
 echo "==> Running dotfiles test assertions..."
 
-# 2. Homebrew on PATH + .zprofile shellenv line present
+# 1. `chezmoi apply` exit 0 (the build reaching this step means this passed).
+
+# 2. Homebrew on PATH + .zprofile shellenv line present (rendered by dot_zprofile.tmpl)
 command -v brew >/dev/null
 brew --prefix >/dev/null
 grep -q 'brew shellenv' "$HOME/.zprofile"
 
-# 3. All brew formulae resolve on PATH
+# 3. All brew formulae resolve on PATH. (stow no longer in the list — not
+#    installed under chezmoi.)
 for cmd in eza bat fzf zoxide fd delta lazygit lazydocker starship nvim node rg \
-           jq yq gh glab kubectl helm k9s cmake stow tree htop btop herdr; do
+           jq yq gh glab kubectl helm k9s cmake tree htop btop herdr; do
   command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
 done
 
@@ -47,18 +51,25 @@ openspec --version >/dev/null
 docker --version >/dev/null
 docker compose version >/dev/null
 
-# 7. Stow symlinks resolve into the repo
-test -L "$HOME/.zshrc"
-readlink "$HOME/.zshrc" | grep -q 'dotfiles/zsh/.zshrc'
+# 7. chezmoi deployed real files (NOT symlinks). The legacy Stow assertions
+#    (test -L + readlink matching dotfiles/zsh/.zshrc) become regular-file
+#    checks + a chezmoi managed-list probe.
+test -f "$HOME/.zshrc"
+test -f "$HOME/.zshenv"
+test -f "$HOME/.zprofile"
 test -f "$HOME/.config/starship.toml"
 test -f "$HOME/.config/nvim/init.lua"
+chezmoi managed | grep -q '^dot_zshrc$'
+chezmoi managed | grep -q '^dot_config/nvim/init.lua$'
 
-# 8. Stow idempotent — re-run with no conflicts
-( cd "$HOME/dotfiles" && stow -R bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty )
+# 8. chezmoi verify exits 0 — nothing in $HOME differs from source state.
+#    Equivalent to the legacy `stow -R` "idempotent re-link" check, but
+#    bidirectional (covers both deployed-vs-source and source-vs-deployed).
+chezmoi verify
 
 # 9. .zshrc sources cleanly. zinit clones plugins on first run (slow + network).
-#     Use `true` (not `exit`) so the assertion checks that zsh can source .zshrc
-#     and run a command — not the incidental $? left by compinit/plugin loading.
+#    Use `true` (not `exit`) so the assertion checks that zsh can source .zshrc
+#    and run a command — not the incidental $? left by compinit/plugin loading.
 zsh -i -c 'true' 2>/dev/null
 
 # 10. AstroNvim config parses. (Full Lazy sync is slow/flaky in CI; this checks
@@ -66,8 +77,10 @@ zsh -i -c 'true' 2>/dev/null
 nvim --headless -c 'qa' 2>/dev/null || \
   nvim --headless -c 'lua print("config ok")' -c 'qa'
 
-# 11. install-linux.sh idempotent — second run exits 0
-bash "$HOME/dotfiles/install-linux.sh"
+# 11. Apply idempotent — second `chezmoi apply` exits 0. The run_* scripts'
+#     once_/onchange_ guards prevent reinstall churn; file targets are
+#     byte-stable so apply reports no changes.
+chezmoi apply
 
 # 12. Nerd Font installed
 fc-list 2>/dev/null | grep -iq meslo

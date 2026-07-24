@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build and run the dotfiles test image.
-#   bash test/run.sh            # local flavor (tests install-linux.sh against your working tree)
-#   bash test/run.sh published  # published flavor (the real curl|bash one-liner vs main)
+#   bash test/run.sh            # local flavor (tests `chezmoi apply` against your working tree)
+#   bash test/run.sh published  # published flavor (real `chezmoi init --apply` one-liner vs main)
 set -euo pipefail
 
 FLAVOR="${1:-local}"

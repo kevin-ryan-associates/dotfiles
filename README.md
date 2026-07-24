@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal configuration files, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Personal configuration files, managed with [chezmoi](https://www.chezmoi.io/).
 
 Currently tracking:
 
@@ -16,7 +16,7 @@ Currently tracking:
 - **`lazygit`** — TUI git client with Tokyo Night colors
 - **`git`** — Git config with Tokyo Night delta diff colors
 - **`lazydocker`** — TUI Docker client with Tokyo Night colors
-- **`colima`** — Docker runtime (replaces Docker Desktop, no GUI)
+- **`colima`** — Docker runtime (macOS; replaces Docker Desktop, no GUI)
 
 ## Why this exists
 
@@ -26,87 +26,66 @@ Config files have a habit of drifting. You tweak your Neovim keymaps on one mach
 
 Tempting, but a footgun. Turning your home directory into a git repo means git is aware of *everything* under it — every cache, every secret, every stray token. One careless `git add -A` and your SSH keys, cloud credentials, or password-manager session files are in a commit. Managing the recursive ignores to prevent that is its own special misery.
 
-### Why Stow?
+### Why chezmoi?
 
-Stow keeps the repo as an ordinary directory (`~/dotfiles`) that lives *outside* `$HOME`-as-a-repo territory, and uses **symlinks** to put each config file where its application expects to find it. That gives three things:
+chezmoi keeps the repo (the "source state") in its own directory, separate from `$HOME`, and **writes real files** into your home directory where each application expects to find them. That gives four things:
 
-- **No copy step.** The deployed file and the repo file are the same file (same inode, two names). Edit either, and you've edited the one real file.
-- **Explicit tracking.** Only what you deliberately put into a package and `stow` gets linked. Nothing is tracked by accident.
-- **Zero dependencies beyond Stow itself.** No templating engine, no daemon, no runtime. It's just symlinks.
+- **Explicit tracking.** Only files you deliberately add with `chezmoi add` get deployed. Nothing is tracked by accident.
+- **Templating.** Files whose correct content depends on a runtime value (`brew --prefix`, the OS, the hostname) live as `.tmpl` sources that render at apply time on the actual machine — no separate install script needed for the bits that depend on the world. (The prior Stow setup worked around this by keeping those files out of the repo entirely and writing them from a bash install script. chezmoi closes that gap.)
+- **Run scripts.** Package installation (brew/apt/npm), the `~/.docker/config.json` jq merge, the Docker-Desktop symlink self-heal, and Linux `chsh -s zsh` all live as `run_*` scripts next to the config they relate to — same repo, same source of truth.
+- **Single source of truth for packages.** `.chezmoidata.yaml` lists every brew formula, cask, apt package, and npm global; the install run-script renders from it. Edits to the package list happen in one place.
 
 ## How it works
 
-Each top-level folder in this repo is a Stow **package**. The directory structure *inside* a package mirrors where its files should land relative to `$HOME`:
+The repo root *is* the chezmoi source directory. After `chezmoi init kevin-ryan-associates/dotfiles` it lives at `~/.local/share/chezmoi/`. chezmoi encodes target paths in the source filenames using attribute prefixes (`dot_` → `.`, `private_` → 0600, `executable_` → +x, `.tmpl` → template) and special directories (`.chezmoiscripts/`, `.chezmoidata.yaml`, `.chezmoiignore`, `.chezmoi.toml.tmpl`).
 
 ```
-~/dotfiles/
-├── zsh/
-│   ├── .zshrc                      → ~/.zshrc
-│   ├── .zshenv                     → ~/.zshenv
-│   └── .config/ainative/
-│       └── banner.sh               → ~/.config/ainative/banner.sh
-├── starship/
-│   └── .config/
-│       └── starship.toml           → ~/.config/starship.toml
-├── nvim/
-│   └── .config/
-│       └── nvim/                   → ~/.config/nvim/
-│           ├── init.lua
-│           └── lua/...
-├── bat/
-│   └── .config/
-│       └── bat/
-│           ├── config               → ~/.config/bat/config
-│           └── themes/
-│               └── tokyonight_moon.tmTheme
-├── btop/
-│   └── .config/
-│       └── btop/
-│           └── btop.conf            → ~/.config/btop/btop.conf
-├── herdr/
-│   └── .config/
-│       └── herdr/
-│           └── config.toml          → ~/.config/herdr/config.toml
-├── htop/
-│   └── .config/
-│       └── htop/
-│           └── htoprc               → ~/.config/htop/htoprc
-├── lazygit/
-│   └── .config/
-│       └── lazygit/
-│           └── config.yml           → ~/.config/lazygit/config.yml
-│   └── Library/
-│       └── Application Support/
-│           └── lazygit/
-│               └── config.yml       → ~/Library/Application Support/lazygit/config.yml
-├── lazydocker/
-│   └── .config/
-│       └── lazydocker/
-│           └── config.yml           → ~/.config/lazydocker/config.yml
-│   └── Library/
-│       └── Application Support/
-│           └── lazydocker/
-│               └── config.yml       → ~/Library/Application Support/lazydocker/config.yml
-├── git/
-│   └── .config/
-│       └── git/
-│           └── config               → ~/.config/git/config
-├── opencode/
-│   └── .config/
-│       └── opencode/               → ~/.config/opencode/
-│           ├── opencode.jsonc
-│           ├── tui.json
-│           └── themes/
-│               └── tokyonight-moon.json  → ~/.config/opencode/themes/tokyonight-moon.json
-└── ghostty/
-    └── .config/
-        └── ghostty/                → ~/.config/ghostty/
-            └── config
+~/.local/share/chezmoi/
+├── dot_zshrc                        → ~/.zshrc
+├── dot_zshenv                       → ~/.zshenv
+├── dot_zprofile.tmpl                → ~/.zprofile   (templated: probes brew install paths via stat)
+├── dot_config/
+│   ├── ainative/
+│   │   └── banner.sh                → ~/.config/ainative/banner.sh
+│   ├── starship.toml                → ~/.config/starship.toml
+│   ├── nvim/                        → ~/.config/nvim/
+│   │   ├── init.lua
+│   │   └── lua/...
+│   ├── bat/
+│   │   ├── config                   → ~/.config/bat/config
+│   │   └── themes/
+│   │       └── tokyonight_moon.tmTheme
+│   ├── btop/btop.conf               → ~/.config/btop/btop.conf
+│   ├── herdr/config.toml            → ~/.config/herdr/config.toml
+│   ├── htop/htoprc                  → ~/.config/htop/htoprc
+│   ├── lazygit/config.yml           → ~/.config/lazygit/config.yml
+│   ├── lazydocker/config.yml        → ~/.config/lazydocker/config.yml
+│   ├── git/config                   → ~/.config/git/config
+│   ├── opencode/                    → ~/.config/opencode/
+│   │   ├── opencode.jsonc
+│   │   ├── tui.json
+│   │   └── themes/tokyonight-moon.json
+│   └── ghostty/config               → ~/.config/ghostty/config
+├── .chezmoidata.yaml                 # static package inventory (brew/apt/npm lists)
+├── .chezmoi.toml.tmpl                # init config — fails early if git missing
+├── .chezmoiignore                   # README/AGENTS/test/ + opencode runtime artifacts
+└── .chezmoiscripts/
+    ├── run_once_before_install-packages.sh.tmpl              # brew install + casks + apt + opencode + openspec
+    ├── run_onchange_before_configure-docker-cli-plugins.sh.tmpl  # macOS jq patch to ~/.docker/config.json
+    ├── run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl    # self-heal broken /usr/local/bin links
+    └── run_once_after_set-default-shell.sh.tmpl              # Linux: chsh -s zsh
 ```
 
-When you run `stow zsh` from inside `~/dotfiles`, Stow treats the `zsh/` package folder as transparent and replicates everything beneath it into your home directory as symlinks.
+When you run `chezmoi apply`, chezmoi:
 
-> **The one rule that matters:** the path *inside* each package must mirror the target path under `$HOME`. Get that nesting right and everything else just works. If files ever link to the wrong place, it's almost always a package's internal structure not matching the target layout.
+1. Runs `run_before_` scripts (installs packages before any templated config needs `brew --prefix`).
+2. Writes every target file (real files, not symlinks) to `$HOME`, rendering templates on the way.
+3. Runs `run_after_` scripts (Docker Desktop cleanup, `chsh`).
+
+> **The rules that matter:**
+> - Editing a deployed file (`~/.zshrc`) does **not** edit the source — it edits a copy. To persist a change, either `chezmoi re-add` (copies the live file back into source) or `chezmoi edit ~/.zshrc` (opens the source in `$EDITOR`, then `chezmoi apply` to deploy). This is the inverse of the Stow symlink model; see [Syncing](#syncing--and-what-chezmoi-apply-actually-does).
+> - Files depending on `brew --prefix`, `.chezmoi.os`, `.chezmoi.arch`, or similar runtime values must be a `.tmpl` and use `output`/`stat`/`.chezmoi.os` — never hand-bake `/opt/homebrew` or `/usr/local` into a non-template source file.
+> - Anything at the source root that isn't a deployable config (README, AGENTS, test harness, opencode runtime artifacts) must be in `.chezmoiignore`, or it will deploy into `$HOME`.
 
 ## Zsh Configuration
 
@@ -175,7 +154,7 @@ The custom **tokyo_night** palette uses Tokyo Night Moon colors (cyan, green, ma
 
 ### Installed CLI tools
 
-These tools are installed by the native install scripts (`install-mac.sh` on macOS or `install-linux.sh` on Ubuntu) and integrate with the Zsh configuration:
+These tools are installed by `run_once_before_install-packages.sh.tmpl` (which renders from `.chezmoidata.yaml`) and integrate with the Zsh configuration:
 
 | Tool | Purpose | Zsh integration |
 |---|---|---|
@@ -200,7 +179,7 @@ These tools are installed by the native install scripts (`install-mac.sh` on mac
 | `helm` | Kubernetes package manager | Native command |
 | `k9s` | TUI Kubernetes cluster manager | Native command |
 | `cmake` | Build system generator | Required for Neovim plugin builds |
-| `colima` | Docker runtime (VM-based) | Replaces Docker Desktop; `colima start/stop` |
+| `colima` | Docker runtime (VM-based, macOS) | Replaces Docker Desktop; `colima start/stop` |
 | `openspec` | Spec-driven dev framework | Native opencode slash commands (`/opsx:propose`, etc.); telemetry opt-out via `OPENSPEC_TELEMETRY=0` |
 
 ### Banner
@@ -283,138 +262,68 @@ This ensures your shell aliases, Zinit plugins, and environment are available in
 ### 1. One-liner (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kevin-ryan-associates/dotfiles/main/bootstrap.sh | bash
+sh -c "$(curl -fsSL https://chezmoi.io/get)" -- init --apply kevin-ryan-associates/dotfiles
 ```
 
-This clones the repo to `~/dotfiles` (or `git pull`s if already present), detects the OS, and runs the native install script (`install-mac.sh` on macOS or `install-linux.sh` on Ubuntu). The install script then:
+This installs chezmoi if missing, clones the source state into `~/.local/share/chezmoi/`, then runs `chezmoi apply` end-to-end. The apply phase:
 
-- Installs Homebrew if missing (on a truly fresh Mac this requires a one-time GUI consent dialog for Xcode Command Line Tools)
-- Installs all brew formulae and casks listed in the manual alternative below
-- Configures `~/.docker/config.json` for Colima's compose plugin (macOS only)
-- Writes `brew shellenv` into `~/.zprofile` so `brew` is on PATH for interactive shells (the path is `brew --prefix`-dependent — `/opt/homebrew` on Apple Silicon, `/usr/local` on Intel, `/home/linuxbrew/.linuxbrew` on Linux — so it can't be a Stow package; the install script owns it, like `~/.docker/config.json`)
-- Stows all config packages into `$HOME`
+- Runs `run_once_before_install-packages.sh.tmpl` — installs Homebrew (and apt base on Linux) if missing, then every formula/cask/apt/npm package listed in `.chezmoidata.yaml`.
+- Writes every config file from source into `$HOME`, rendering templates on the way. Two templated files retire the legacy install-script-as-machine-state pattern:
+  - `dot_zprofile.tmpl` probes `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`, `/home/linuxbrew/.linuxbrew/bin/brew`, `~/.linuxbrew/bin/brew` via `stat` and emits the matching `eval "$(.../brew shellenv)"` line. No more arch-conditional heredoc block in an install script.
+  - `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` does the `~/.docker/config.json` jq merge (macOS only, preserving existing keys) — the same logic the legacy install script owned, now sitting next to the config it touches.
+- Runs `run_once_after_*` scripts — the Docker Desktop symlink self-heal (macOS) and `chsh -s zsh` (Linux).
 
 Then continue to [First Launch](#3-first-launch) below.
 
-> **Heads up — Xcode Command Line Tools:** on a truly fresh macOS, the Homebrew install step pops a GUI dialog for CLT. Click Install, wait for it to finish, and the script continues. This is unavoidable — it's Homebrew's own prerequisite. If `git` is also missing, `bootstrap.sh` exits early with a message to run `xcode-select --install` first.
+> **Heads up — Xcode Command Line Tools:** on a truly fresh macOS, the Homebrew install step inside `install-packages` pops a GUI dialog for CLT. Click Install, wait for it to finish, and the apply continues. This is unavoidable — it's Homebrew's own prerequisite. If `git` is also missing, `.chezmoi.toml.tmpl` aborts `chezmoi init` immediately with the message `xcode-select --install`.
+
+> **First apply on a fresh machine, friendly fail mode:** if you skip `chezmoi init` and run a raw `chezmoi apply` against a machine that doesn't have brew installed yet, `dot_zprofile.tmpl`'s `stat` probes all four candidate brew paths, finds none, and renders an empty `~/.zprofile`. A subsequent `chezmoi apply` (after installing brew) fills it in. No apply fails on a missing binary.
 
 ### 2. Manual alternative (if you prefer not to pipe to bash)
 
 The one-liner above does exactly this, step by step:
 
-#### macOS
-
-On macOS with Homebrew:
+#### Install chezmoi
 
 ```bash
-# Stow (required)
-brew install stow
-
-# Zsh ecosystem (all required for the .zshrc to work properly)
-brew install starship eza bat fzf zoxide fd git-delta lazygit
-
-# CLI utilities
-brew install jq yq htop tree herdr
-
-# Git platform CLIs
-brew install gh glab
-
-# Kubernetes tooling
-brew install kubectl helm k9s
-
-# Build tools
-brew install cmake
-
-# Docker runtime (Colima — lightweight, no GUI)
-# docker-compose provides the v2 compose plugin; install-mac.sh wires cliPluginsExtraDirs
-# into ~/.docker/config.json so `docker compose` resolves out of the box.
-brew install colima docker docker-compose
-
-# 1Password CLI (for secret management)
-brew install --cask 1password-cli
-
-# Terminal emulator
-brew install --cask ghostty
-
-# Neovim (AstroNvim requires a Nerd Font)
-brew install neovim node npm ripgrep
-brew install --cask font-meslo-lg-nerd-font
-
-# OpenCode
-curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
-
-# OpenSpec (spec-driven dev framework; integrates with opencode via /opsx:* commands)
-npm install -g @fission-ai/openspec@latest
+# macOS or Linux (chezmoi is a single Go binary)
+brew install chezmoi
 ```
 
-#### Ubuntu
-
-On Ubuntu, install the apt base and native Docker first, then Homebrew on Linux, then the brew formulae:
+#### Init the source state from this repo
 
 ```bash
-# apt base (Homebrew prereqs + Docker + zsh)
-sudo apt-get update
-sudo apt-get install -y zsh git curl file ca-certificates build-essential procps fontconfig unzip
-sudo apt-get install -y docker.io docker-compose-v2
-
-# Homebrew on Linux
-NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-# Stow (required)
-brew install stow
-
-# Zsh ecosystem
-brew install starship eza bat fzf zoxide fd git-delta lazygit
-
-# CLI utilities
-brew install jq yq htop tree herdr
-
-# Git platform CLIs
-brew install gh glab
-
-# Kubernetes tooling
-brew install kubectl helm k9s
-
-# Build tools
-brew install cmake
-
-# 1Password CLI
-brew install --cask 1password-cli
-
-# Terminal emulator (Ghostty may need manual .deb fallback)
-brew install ghostty
-
-# Neovim
-brew install neovim node npm ripgrep
-
-# Nerd Font (manual install; Homebrew casks target macOS fonts)
-mkdir -p ~/.local/share/fonts
-curl -fsSL -o ~/.local/share/fonts/MesloLGSNerdFont-Regular.ttf \
-  "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-fc-cache -f ~/.local/share/fonts
-
-# OpenCode
-curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install | bash
-
-# OpenSpec
-npm install -g @fission-ai/openspec@latest
+chezmoi init kevin-ryan-associates/dotfiles
+# Clones into ~/.local/share/chezmoi/ and renders ~/.config/chezmoi/chezmoi.toml
+# from .chezmoi.toml.tmpl (fails early if git not on PATH).
 ```
 
-#### Clone this repo
+#### Apply (installs packages, writes configs, runs self-heal)
 
 ```bash
-git clone https://github.com/kevin-ryan-associates/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+chezmoi apply
 ```
 
-#### Stow the packages
+`chezmoi apply` is the single converge command — equivalent to the legacy `bash bootstrap.sh` end-to-end. Running it twice is idempotent (the `once_`/`onchange_` script guards prevent reinstall churn).
+
+The package list `chezmoi apply` installs is the authoritative inventory in `.chezmoidata.yaml`; if you want to audit it before running apply, you can:
 
 ```bash
-stow bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty
+chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_before_install-packages.sh.tmpl
+# or just read .chezmoidata.yaml directly — it's plain YAML.
 ```
 
-That's it. Stow's default target is the parent of wherever you run it, so cloning to `~/dotfiles` and running from inside it links everything into `$HOME` automatically.
+#### What `.chezmoidata.yaml` installs
+
+For reference, the package list lives in `.chezmoidata.yaml` at the source root. It currently prescribes:
+
+**Brew formulae (both platforms):** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr` (CLI utilities), `gh glab` (Git platform CLIs), `kubectl helm k9s` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
+
+**macOS only:** `colima docker docker-compose` plus casks `1password-cli ghostty font-meslo-lg-nerd-font`. `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
+
+**Linux only:** `apt` installs `zsh git curl file ca-certificates build-essential procps fontconfig unzip` and `docker.io docker-compose-v2`; the MesloLGS Nerd Font `.ttf` is downloaded into `~/.local/share/fonts` (casks target macOS fonts only); `chsh -s zsh` runs at the end since Ubuntu doesn't ship zsh as the login shell.
+
+**Both platforms:** openCode installer (`curl | bash -- --no-modify-path`); `npm install -g @fission-ai/openspec@latest`; `bat cache --build`.
 
 ### 3. First Launch
 
@@ -436,7 +345,7 @@ Mason (LSP/linter/formatter installer) will also run on first open. Let it compl
 opencode auth
 ```
 
-Auth tokens are stored in `~/.local/share/opencode/` — outside the dotfiles repo and never tracked.
+Auth tokens are stored in `~/.local/share/opencode/` — outside the source state and never tracked.
 
 #### Enable websearch (optional)
 
@@ -461,7 +370,7 @@ This creates `openspec/` (specs + changes) plus `.opencode/skills/openspec-*/` a
 
 #### About the `npm warn allow-scripts` message
 
-When the install scripts run `npm install -g @fission-ai/openspec@latest`, npm prints:
+When the install run-script renders `npm install -g @fission-ai/openspec@latest`, npm prints:
 
 ```
 npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
@@ -471,7 +380,7 @@ npm warn allow-scripts Run `npm install -g --allow-scripts=@fission-ai/openspec`
 
 This is **expected and intentionally left in place**. Modern npm (v7+) blocks a package's `postinstall` script by default as a supply-chain safety guard — a global package's install scripts can run arbitrary code on your machine, so npm refuses to run them unless explicitly allow-listed.
 
-We do **not** allow-list `@fission-ai/openspec`'s postinstall in the install scripts because:
+We do **not** allow-list `@fission-ai/openspec`'s postinstall in the install run-script because:
 
 1. **The CLI works without it.** `openspec --version`, `openspec init`, `openspec update` all function correctly with the script suppressed (verified during install script setup).
 2. **Defense in depth.** Global npm packages are vendored from a registry; running their install scripts without review is exactly what the guard exists to prevent. Running install scripts is an opt-in privilege, not a sensible default.
@@ -483,11 +392,11 @@ We do **not** allow-list `@fission-ai/openspec`'s postinstall in the install scr
    ```bash
    npm config set allow-scripts=@fission-ai/openspec --location=user
    ```
-   Re-running `bash bootstrap.sh` will continue to work either way — the warning is informational, not an error.
+   Re-running `chezmoi apply` will continue to work either way — the warning is informational, not an error.
 
-The `set -euo pipefail` in the install scripts is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
+The `set -euo pipefail` in the install run-script is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
 
-### 7. Start Colima (Docker runtime)
+### 7. Start Colima (Docker runtime — macOS only)
 
 Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
 
@@ -505,77 +414,89 @@ Colima creates a VM with default specs (2 CPU, 2GB RAM). To customize:
 colima start --cpu 4 --memory 8 --disk 60
 ```
 
+On Linux, Docker runs natively — no Colima. Start the daemon with `sudo systemctl start docker`.
+
 ## Conflicts on a fresh machine
 
-If an application already wrote a default config before you stowed (e.g. `~/.config/opencode/opencode.jsonc` already exists as a real file), Stow refuses to clobber it and reports a conflict. Two ways out:
+If an application already wrote a default config before you applied chezmoi (e.g. `~/.config/opencode/opencode.jsonc` already exists with non-empty content), `chezmoi apply` will prompt you with a diff and ask whether to overwrite. Options:
 
-- Remove or back up the offending target file, then `stow` again, **or**
-- `stow --adopt nvim` — but use this carefully. `--adopt` pulls the *existing target file's contents into the repo*, overwriting the repo's version. Commit first so you can diff and revert if it swallowed something you wanted to keep.
+- Run `chezmoi diff ~/.config/opencode/opencode.jsonc` first to inspect the proposed change.
+- Force overwrite: `chezmoi apply --force`.
+- Keep the live version: `chezmoi forget ~/.config/opencode/opencode.jsonc` (untrack it without removing it from disk), then make your edit part of source via `chezmoi add ~/.config/opencode/opencode.jsonc` after deciding.
+- Take the live file as the new source of truth: `chezmoi re-add ~/.config/opencode/opencode.jsonc` (re-copies the live file into source, overwriting the previous source).
 
-## Syncing — and what "both ways" actually means
+## Syncing — and what `chezmoi apply` actually does
 
-There are two different syncs in play, and **neither is an automatic background daemon**. This isn't Dropbox.
+Two halves, and **neither is an automatic background daemon**. This isn't Dropbox.
 
-### Local: edits ↔ repo (genuinely two-way)
+### Local: edits ↔ source state (one-way)
 
-Because Stow uses symlinks, the file at `~/.config/nvim/init.lua` *is* the file at `~/dotfiles/nvim/.config/nvim/init.lua` — one inode, two names. Edit it from either location and there's no copy and no drift. Your live config edits land in the repo's working tree **as you make them**.
-
-This also means anything written *by* an application into its config directory is immediately in the repo too. Create an OpenCode agent through the TUI, save a Ghostty theme, update your Zsh aliases — all of it lands directly in `~/dotfiles/` without any sync step. You just need to commit when you want a checkpoint.
-
-The only remaining local step is taking a git snapshot:
+chezmoi writes **real files** to `$HOME`, not symlinks. Editing a deployed file (`~/.config/nvim/init.lua`) edits a copy — the source state is unaffected. To persist a change in source:
 
 ```bash
-cd ~/dotfiles
-git add -A
-git commit -m "add opencode agent for JLR pipeline"
-git push
+# Open the source (in $EDITOR), make the edit, then deploy:
+chezmoi edit ~/.config/nvim/init.lua
+chezmoi apply ~/.config/nvim/init.lua
+
+# OR adopt the live file's current content as the new source:
+chezmoi re-add ~/.config/nvim/init.lua
 ```
+
+To see what's drifted between live and source:
+
+```bash
+chezmoi status        # lists changed/added/removed files
+chezmoi diff          # unified diff for each
+```
+
+### Application-written state inside a managed directory
+
+Anything an application writes into a chezmoi-managed directory (e.g. `~/.config/opencode/`) lands on disk in `$HOME` — **not** pulled back into the source automatically. If you add an opencode agent through the TUI and want it tracked in source, run `chezmoi add ~/.config/opencode/agents/...`. If you'd like this captured on every apply cycle, set up `chezmoi re-add` as a `run_after_` script — though this is a divergence from chezmoi's normal one-way reflexive model, so by default the repo deliberately does not.
 
 ### Cross-machine: repo ↔ other machines (manual, order matters)
 
-This half is always deliberate git, regardless of tooling:
-
 ```bash
-# machine A — after committing and pushing (above)
+# machine A — after editing in source (above) and committing
 
 # machine B
-cd ~/dotfiles
-git pull
-stow -R bat btop git herdr htop lazygit lazydocker zsh starship nvim opencode ghostty   # restow: cleans up and re-links after a pull that added files
+chezmoi update       # git pull on the source, then apply
 ```
 
-If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git.
+If you edit on two machines without pulling first, you get a normal git divergence to merge — nothing exotic, just regular git (`chezmoi cd` drops you into the source dir to resolve it).
 
-## Day-to-day Stow commands
+## Day-to-day chezmoi commands
 
 | Command | What it does |
 |---|---|
-| `stow zsh` | Link the `zsh` package into `$HOME` |
-| `stow -R zsh` | **Restow** — unlink then relink. Run after a `git pull` that added new files |
-| `stow -D zsh` | **Unstow** — remove the package's symlinks (leaves the repo files untouched) |
-| `stow zsh starship nvim` | Operate on multiple packages at once |
-
-Notes:
-
-- You only need to re-run `stow` when the *set of files changes* (a new file or a new package). **Editing an already-linked file needs nothing** — the link already points at it.
-- Re-running `stow` on an already-stowed package is safe and idempotent.
-- `stow -D` must be run from the *same directory* you originally stowed from, since Stow resolves link targets relative to its current location.
+| `chezmoi status` | Lists files in `$HOME` that differ from source state (a dry-run pointer for `apply`) |
+| `chezmoi diff` | Shows unified diff of every pending change |
+| `chezmoi diff <path>` | Shows the diff for one path |
+| `chezmoi apply` | Writes every pending change to `$HOME` (runs scripts; idempotent) |
+| `chezmoi apply <path>` | Converge just one path |
+| `chezmoi edit <path>` | Open the source for a live path in `$EDITOR` |
+| `chezmoi add <path>` | Track a live file (copies live → source) |
+| `chezmoi re-add <path>` | Re-capture an already-tracked live file's current contents into source |
+| `chezmoi forget <path>` | Untrack a file (leaves the live file alone) |
+| `chezmoi cd` | `cd` into the source directory |
+| `chezmoi update` | `git pull` source, then apply |
+| `chezmoi verify` | Exit non-zero if anything in `$HOME` differs from source (the inverse of `apply`) |
 
 ## Adding a new config
 
-1. Create the package structure mirroring the target path:
+1. Install chezmoi and init the source (one-time per machine): `chezmoi init kevin-ryan-associates/dotfiles`.
+2. Track the live config:
    ```bash
-   mkdir -p ~/dotfiles/starship/.config
+   chezmoi add ~/.config/starship.toml
    ```
-2. Move the existing config into it:
+   This copies the live file into the source directory at the appropriate chezmoi-named path (`~/.local/share/chezmoi/dot_config/starship.toml`).
+3. (Optional) Make it a template if it needs runtime resolution: rename the source file to `<name>.tmpl` and use `{{ ... }}` directives. Re-run `chezmoi apply`.
+4. Commit:
    ```bash
-   mv ~/.config/starship.toml ~/dotfiles/starship/.config/starship.toml
+   chezmoi cd
+   git add -A
+   git commit -m "add starship prompt config"
+   git push
    ```
-3. Stow it:
-   ```bash
-   cd ~/dotfiles && stow starship
-   ```
-4. Commit.
 
 ## Secret hygiene
 
@@ -586,6 +507,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 - **Audit before pushing anywhere public.** Run [`gitleaks detect`](https://github.com/gitleaks/gitleaks) over the repo. Remember that *anything ever committed stays in history* even if you later delete it — scrub with `git filter-repo` and rotate the key if anything slips through.
 - **OpenCode auth lives outside the repo.** Tokens are stored in `~/.local/share/opencode/` — not tracked. But check `opencode.jsonc` for any inline API keys if you've manually edited it.
 - **Zsh config is the highest-risk file.** It's easy to export a key inline in `.zshrc` and forget it's there. Audit it before the first commit.
+- **`.chezmoiignore` is also a secret-defense layer.** Anything tracked in source that must never deploy to `$HOME` belongs here. Review it whenever source layout changes.
 
 ## What is and isn't tracked
 
@@ -593,11 +515,12 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 |---|---|---|
 | `~/.config/nvim/` | ✅ | Your config and Lazy lockfile |
 | `~/.local/share/nvim/` | ❌ | Plugin installs — regenerated by Lazy |
-| `~/.config/opencode/` | ✅ | Config, agents, rules |
+| `~/.config/opencode/` | ✅ (minus runtime artifacts — see `.chezmoiignore`) | Config, agents, rules |
 | `~/.local/share/opencode/` | ❌ | Auth tokens — never track |
 | `~/.config/ghostty/` | ✅ | Terminal config |
 | `~/.zshrc` / `.zshenv` | ✅ | Shell config |
-| `~/.zprofile` | ❌ | install script-managed — `brew shellenv` with runtime `brew --prefix` (architecture-conditional, like `~/.docker/config.json`) |
+| `~/.zprofile` | ✅ (templated — `dot_zprofile.tmpl`) | `brew shellenv` line rendered from `stat`-probed brew path at apply time. The legacy install script owned this; chezmoi now templates it. |
+| `~/.docker/config.json` | ❌ (unmanaged; written by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl`) | jq merge preserves user keys; a templated file would clobber them |
 | `~/.config/starship.toml` | ✅ | Prompt config |
 | `~/.config/ainative/banner.sh` | ✅ | Startup banner |
 | `~/.config/bat/` | ✅ | Syntax highlighting theme and config |
@@ -608,21 +531,22 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
+| `README.md`, `AGENTS.md`, `test/`, `LICENSE` | tracked in source, ignored from deploy | Repo metadata / test harness — see `.chezmoiignore` |
 
 ## Platform notes
 
-Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). `bootstrap.sh` detects the OS via `uname -s` and dispatches to the native install script:
+Supported platforms: **macOS** (Darwin) and **Ubuntu 24.04** (Linux). `chezmoi init` doesn't need OS dispatch — chezmoi detects the OS at apply time via `.chezmoi.os`. Per-platform behavior:
 
-- **`install-mac.sh`**: Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font.
-- **`install-linux.sh`**: apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Homebrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew formula; Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`.
+- **macOS:** Homebrew for all tooling; Colima as the Docker runtime; casks for 1Password CLI, Ghostty, and the Nerd Font. `dot_zprofile.tmpl`'s `stat` will find `/opt/homebrew/bin/brew` (Apple Silicon) or `/usr/local/bin/brew` (Intel) and emit the appropriate `eval "$(... shellenv)"` line — no arch branches in source.
+- **Linux:** apt for the base prereqs (zsh, git, curl, build-essential) and Docker (native, not Colima); Linuxbrew for the UX tooling (eza, bat, fzf, starship, etc.); 1Password CLI as a Linuxbrew cask (`op --version` needs `unzip` apt package); Ghostty via brew or manual .deb; Nerd Font downloaded to `~/.local/share/fonts`. `chsh -s zsh` at the end since Ubuntu's default login shell is bash.
 
-Both install scripts source `brew-packages.sh` for the shared brew formula list so the tool inventory stays in sync.
+Both paths are encoded in a single template (`run_once_before_install-packages.sh.tmpl`) with `{{ if eq .chezmoi.os "darwin" }}` / `{{ else if eq .chezmoi.os "linux" }}` branches. The shared formula list lives in `.chezmoidata.yaml` and is the single source of truth — edits happen in one file, not across `brew-packages.sh` *and* the README install blocks *and* the install scripts (the previous docs-sync hazard).
 
 All configs use the standard XDG layout (`~/.config`, `~/.local/share`, `~/.local/state`, `~/.cache`) on both platforms. If you've set a non-default `$XDG_CONFIG_HOME`, the target paths shift accordingly — check with `echo $XDG_CONFIG_HOME`.
 
 ### Testing
 
-The Ubuntu install path is tested via Docker — see `test/README.md` for the harness. The macOS path is verified manually on a real Mac. The Docker test covers everything except the real Docker daemon (an unprivileged container can't run `dockerd`) and GUI app launches (Ghostty) — those are verified manually on a real Ubuntu machine.
+The Ubuntu apply path is tested via Docker — see `test/README.md` for the harness. The macOS path is verified manually on a real Mac. The Docker test covers everything except the real Docker daemon (an unprivileged container can't run `dockerd`) and GUI app launches (Ghostty) — those are verified manually on a real Ubuntu machine.
 
 ## License
 

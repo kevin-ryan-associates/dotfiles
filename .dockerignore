@@ -1,2 +1,5 @@
 .git
 .gitignore
+# Skip opencode runtime artifacts from the docker build context — they bloat
+# the transfer and aren't deployed by chezmoi anyway (per .chezmoiignore).
+dot_config/opencode/node_modules

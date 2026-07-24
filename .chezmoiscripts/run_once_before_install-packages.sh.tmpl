@@ -1,0 +1,196 @@
+{{- /*
+=============================================================================
+install-packages.sh.tmpl — converged machine-state installer
+
+This single template replaces the legacy bootstrap.sh, install-mac.sh,
+install-linux.sh, and brew-packages.sh quartet. Per AGENTS.md, the install
+logic now lives in chezmoi alongside the config it complements.
+
+`run_once_before_` semantics:
+  • `run_`     — treat contents as a bash script
+  • `once_`    — run only when this script's source content has not yet run
+                 successfully (idempotent across applies until the script
+                 itself changes)
+  • `before_`  — run during step 4 of the application order, BEFORE any file
+                 targets are written. This guarantees brew is on disk and on
+                 PATH (after the `eval "$(.../brew shellenv)"` line below)
+                 before any subsequent `*_dot_zprofile.tmpl` resolves.
+
+Brew is installed lazily on first apply (if missing). PATH for child processes
+of this script is updated in-process via `eval "$(.../brew shellenv)"` so the
+`brew install` lines below work even on a fresh machine where Homebrew was
+just installed. The delimited template `{{- if eq .chezmoi.os "darwin" }}`
+branch handles macOS; `{{- else if eq .chezmoi.os "linux" }}` handles Ubuntu.
+
+Idempotent by construction: every step is a `brew install` (free for
+already-installed formulae), an `apt-get install -y` (free for already-
+installed debs), a guarded `command -v` skip, or an unguarded mkdir/curl
+that targets an absolute path.
+=============================================================================
+*/ -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{- if eq .chezmoi.os "darwin" }}
+# =============================================================================
+# macOS install path — Homebrew for all tooling; Colima Docker runtime
+# =============================================================================
+
+echo "==> Checking for Homebrew..."
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew not found. Installing from https://brew.sh ..."
+  echo "(Requires Xcode Command Line Tools — a GUI dialog may appear for consent.)"
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Homebrew's installer does NOT put brew on PATH for the current shell. Source
+  # it in-process so the `brew install` lines below work this run.
+  # Paths: /opt/homebrew (Apple Silicon), /usr/local (Intel).
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  else
+    echo "ERROR: Homebrew install completed but brew not found at expected path." >&2
+    exit 1
+  fi
+fi
+
+echo "==> Installing Homebrew dependencies for Zsh ecosystem..."
+brew install {{ range .packages.brew.main }}{{ . }} {{ end }}
+
+echo "==> Installing CLI utilities..."
+brew install {{ range .packages.brew.cli }}{{ . }} {{ end }}
+
+echo "==> Installing Git platform CLIs..."
+brew install {{ range .packages.brew.git_platform }}{{ . }} {{ end }}
+
+echo "==> Installing Kubernetes tooling..."
+brew install {{ range .packages.brew.k8s }}{{ . }} {{ end }}
+
+echo "==> Installing build tools..."
+brew install {{ range .packages.brew.build }}{{ . }} {{ end }}
+
+echo "==> Installing 1Password CLI..."
+brew install --cask 1password-cli || true
+
+echo "==> Installing Colima (Docker runtime without GUI)..."
+brew install {{ range .macos.brew.docker_runtime }}{{ . }} {{ end }}
+
+echo "==> Installing Neovim and dependencies..."
+brew install {{ range .packages.brew.dev }}{{ . }} {{ end }}
+
+echo "==> Installing terminal emulator..."
+brew install --cask ghostty || true
+brew install --cask font-meslo-lg-nerd-font
+
+echo "==> Installing OpenCode..."
+curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install -o /tmp/opencode-install.sh
+bash /tmp/opencode-install.sh --no-modify-path
+rm -f /tmp/opencode-install.sh
+
+echo "==> Installing OpenSpec (spec-driven dev framework)..."
+npm install -g {{ range .packages.npm_global }}{{ . }} {{ end }}
+
+echo "==> Building bat theme cache..."
+bat cache --build
+
+{{- else if eq .chezmoi.os "linux" }}
+# =============================================================================
+# Ubuntu install path — apt base + Docker, Linuxbrew for UX tooling
+# =============================================================================
+
+echo "==> Installing apt base (Homebrew prereqs + sudo + zsh)..."
+sudo apt-get update
+sudo apt-get install -y {{ range .linux.apt }}{{ . }} {{ end }}
+
+echo "==> Checking for Homebrew..."
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew not found. Installing from https://brew.sh ..."
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Paths: /home/linuxbrew/.linuxbrew (system), $HOME/.linuxbrew (user).
+  if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  elif [ -x "$HOME/.linuxbrew/bin/brew" ]; then
+    eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+  else
+    echo "ERROR: Homebrew install completed but brew not found at expected path." >&2
+    exit 1
+  fi
+fi
+
+echo "==> Installing Homebrew dependencies for Zsh ecosystem..."
+brew install {{ range .packages.brew.main }}{{ . }} {{ end }}
+
+echo "==> Installing CLI utilities..."
+brew install {{ range .packages.brew.cli }}{{ . }} {{ end }}
+
+echo "==> Installing Git platform CLIs..."
+brew install {{ range .packages.brew.git_platform }}{{ . }} {{ end }}
+
+echo "==> Installing Kubernetes tooling..."
+brew install {{ range .packages.brew.k8s }}{{ . }} {{ end }}
+
+echo "==> Installing build tools..."
+brew install {{ range .packages.brew.build }}{{ . }} {{ end }}
+
+echo "==> Installing Docker (native Linux runtime)..."
+# Colima is macOS-only. On Linux, Docker runs natively. docker-compose-v2
+# provides the `docker compose` plugin; resolves natively (no ~/.docker/config.json
+# cliPluginsExtraDirs wiring needed, unlike macOS Colima).
+sudo apt-get install -y {{ range .linux.apt_docker }}{{ . }} {{ end }}
+sudo usermod -aG docker "$(id -un)" 2>/dev/null || true
+echo "  Note: re-login (or 'newgrp docker') to use docker without sudo."
+
+echo "==> Installing 1Password CLI..."
+# 1password-cli is a cask on both macOS and Linux. On Linux, the cask
+# unzips the `op` binary (requires `unzip` apt package, installed above).
+brew install --cask 1password-cli || true
+
+echo "==> Installing Neovim and dependencies..."
+brew install {{ range .packages.brew.dev }}{{ . }} {{ end }}
+
+echo "==> Installing terminal emulator..."
+# Ghostty's Linux build is not reliably on Linuxbrew. Attempt brew, then
+# fall back to a manual hint. Real-world ghostty is verified separately.
+brew install ghostty 2>/dev/null || \
+  echo "  Ghostty: install manually from https://ghostty.org/download (Linux .deb)"
+
+echo "==> Installing Nerd Font (MesloLGS)..."
+# Casks install to ~/Library/Fonts (macOS-only). On Linux, download the .ttf
+# to ~/.local/share/fonts and refresh the fontconfig cache.
+mkdir -p "$HOME/.local/share/fonts"
+if curl -fsSL -o "$HOME/.local/share/fonts/MesloLGSNerdFont-Regular.ttf" "{{ .linux.nerd_font_url }}"; then
+  fc-cache -f "$HOME/.local/share/fonts" 2>/dev/null || true
+else
+  echo "  Font download failed; install MesloLGS Nerd Font manually"
+fi
+
+echo "==> Installing OpenCode..."
+curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install -o /tmp/opencode-install.sh
+bash /tmp/opencode-install.sh --no-modify-path
+rm -f /tmp/opencode-install.sh
+
+echo "==> Installing OpenSpec (spec-driven dev framework)..."
+npm install -g {{ range .packages.npm_global }}{{ . }} {{ end }}
+
+echo "==> Building bat theme cache..."
+bat cache --build
+
+{{- else }}
+{{- fail (printf "unsupported OS: %s" .chezmoi.os) -}}
+{{- end }}
+
+echo ""
+echo "========================================"
+echo "  Package install complete!"
+echo "========================================"
+echo ""
+echo "Next steps (run separately, not part of this script):"
+echo "  1. Open a new terminal window"
+echo "  2. Zinit will auto-install on first run (~10-30s)"
+echo "  3. Run 'nvim' to install AstroNvim plugins"
+echo "  4. Run 'opencode auth' to authenticate"
+{{- if eq .chezmoi.os "darwin" }}
+echo "  5. Run 'colima start' to launch the Docker runtime"
+{{- else if eq .chezmoi.os "linux" }}
+echo "  5. Docker is installed — start the daemon: sudo systemctl start docker"
+{{- end }}

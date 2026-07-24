@@ -1,0 +1,40 @@
+{{- /*
+=============================================================================
+cleanup-docker-desktop-symlinks — self-heal for machines that previously had
+Docker Desktop installed.
+
+Replaces the eponymous block in the legacy install-mac.sh. Migrated unmodified
+into a chezmoi `run_once_after_` script (runs once per source-state content
+change, after all file targets are written). Same convention as AGENTS.md
+specifies:
+
+  1. No-op on fresh machines (guard on stale state, not blanket remove).
+  2. Only touch broken symlinks  ([ -L "$link" ] && [ ! -e "$link" ]).
+     A working brew link for the same name is left alone.
+  3. Never abort the script when sudo can't prompt
+     (`sudo rm ... 2>/dev/null || echo "hint"`).
+  4. Print the manual equivalent in the hint so a non-interactive run leaves
+     the user a copy-pasteable command.
+
+Writes /usr/local/bin (outside $HOME), so this must stay a script —
+templates can only write inside $HOME. macOS-only — Linux never had Docker
+Desktop.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# set -euo pipefail deliberately NOT set: a failed sudo under no-TTY must not
+# crash the install; the `|| echo "hint"` below handles each link individually.
+
+echo "==> Cleaning up stale Docker Desktop symlinks (if present)..."
+for link in /usr/local/bin/docker-compose \
+            /usr/local/bin/docker-credential-desktop \
+            /usr/local/bin/docker-credential-osxkeychain; do
+  if [ -L "$link" ] && [ ! -e "$link" ]; then
+    sudo rm -f "$link" 2>/dev/null || \
+      echo "  skipping $link (no sudo TTY; run manually: sudo rm $link)"
+  fi
+done
+{{- else -}}
+{{- /* No-op on Linux — Docker Desktop never existed there. */ -}}
+{{- end -}}

@@ -1,0 +1,33 @@
+{{- /*
+=============================================================================
+.chezmoiignore — files at source root that must NOT deploy into $HOME.
+
+Paths below match TARGET paths (i.e. relative to $HOME), not source paths.
+See chezmoi special-files/.chezmoiignore: patterns match the entries that
+chezmoi would otherwise manage in the destination directory.
+
+Top-level `.`-prefixed source entries (`.chezmoidata.yaml`, `.chezmoiscripts/`,
+`.chezmoi.toml.tmpl`, this file) are auto-ignored by chezmoi except the special
+`.chezmoi*` machinery. So we explicitly list only the remaining non-config
+top-level entries and the opencode runtime artifacts that should stay in
+source but never deploy.
+=============================================================================
+*/ -}}
+# Top-level repo metadata — in repo for humans/CI, not for $HOME.
+README.md
+AGENTS.md
+LICENSE
+
+# Docker test harness — not a config package, never in $HOME.
+test/
+
+# opencode runtime artifacts — checked into source so `chezmoi update` pulls
+# them, but ignored from deployment. (Under Stow, these were gitignored AND
+# leaked through the directory symlink; under chezmoi the live ~/.config/opencode/
+# is a real dir, so opencode's own writes stay in $HOME, hygienic.)
+.config/opencode/node_modules
+.config/opencode/package.json
+.config/opencode/package-lock.json
+.config/opencode/.gitignore
+.config/opencode/*.bak
+.config/opencode/plugins/

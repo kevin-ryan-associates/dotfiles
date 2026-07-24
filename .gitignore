@@ -106,7 +106,7 @@ __pycache__/
 
 
 # ---------------------------------------------------------------------------
-# Opencode auto-generated files
+# Opencode auto-generated files (source paths now reflect chezmoi naming)
 # ---------------------------------------------------------------------------
-opencode/.config/opencode/*.bak
-opencode/.config/opencode/plugins/
+dot_config/opencode/*.bak
+dot_config/opencode/plugins/

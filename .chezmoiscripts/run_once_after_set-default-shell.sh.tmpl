@@ -1,0 +1,29 @@
+{{- /*
+=============================================================================
+set-default-shell — Linux-only `chsh -s zsh`
+
+Ubuntu ships bash as the default login shell. macOS users set zsh via System
+Settings (or it's the default on recent macOS), so this is Linux-only. Migrated
+from install-linux.sh with identical behavior:
+
+  • Idempotent — skipped if $SHELL is already zsh.
+  • sudo chsh prompts for the user's password on a real machine (expected);
+    in a container with passwordless sudo it succeeds silently.
+  • On no-TTY piped installs, prints a copy-pasteable hint instead of
+    aborting the install.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+# No `set -e` — chsh failure under no-TTY is expected, and must NOT abort
+# chezmoi apply.
+
+if [ "${SHELL:-}" != "$(command -v zsh)" ]; then
+  echo ""
+  echo "==> Setting default shell to zsh..."
+  sudo chsh -s "$(command -v zsh)" "$(id -un)" 2>/dev/null || \
+    echo "  chsh needs your password; run manually: chsh -s $(command -v zsh)"
+fi
+{{- else -}}
+{{- /* No-op on macOS — zsh is macOS default on recent releases. */ -}}
+{{- end -}}

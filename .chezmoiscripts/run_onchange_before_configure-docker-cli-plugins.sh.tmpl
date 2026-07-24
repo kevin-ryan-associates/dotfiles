@@ -1,0 +1,64 @@
+{{- /*
+=============================================================================
+configure-docker-cli-plugins — idempotent ~/.docker/config.json patcher
+
+Replaces the jq block that used to live at the bottom of the legacy
+install-mac.sh. Uses `run_onchange_before_` semantics:
+
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash), so re-applies don't churn ~/.docker/config.json's
+    mtime once the patch is stable.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.docker/config.json is NOT
+    a chezmoi-managed file; this script is the only writer.
+  • macOS-only via `{{ if eq .chezmoi.os "darwin" }}` — Linux resolves
+    docker compose natively (Docker Desktop is macOS/Windows).
+
+Why a script, not a pure `*.tmpl` file target: a template target fully
+overwrites the destination, which would clobber any user-added keys in
+~/.docker/config.json (currentContext, credsStore for non-Desktop setups,
+auths, etc.). The jq merge preserves all existing fields and only:
+  1. Adds the brew --prefix lib/docker/cli-plugins directory to
+     cliPluginsExtraDirs (idempotent — guarded by `index`).
+  2. Removes credsStore == "desktop" (the Docker Desktop credential
+     helper Colima replaces).
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve brew --prefix at apply time — works on Apple Silicon (/opt/homebrew)
+# and Intel (/usr/local) without branches. The output template function runs
+# `brew --prefix` directly; we don't rely on PATH since chezmoi's process env
+# may not include brew after a just-completed install-packages script.
+BREW_BIN=""
+for cand in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  if [ -x "$cand" ]; then
+    BREW_BIN="$cand"
+    break
+  fi
+done
+if [ -z "$BREW_BIN" ]; then
+  echo "ERROR: brew not found at /opt/homebrew/bin/brew or /usr/local/bin/brew — install-packages not run yet?" >&2
+  exit 1
+fi
+PLUGINS_DIR="$("$BREW_BIN" --prefix)/lib/docker/cli-plugins"
+
+echo "==> Configuring Docker CLI plugins (cliPluginsExtraDirs: $PLUGINS_DIR)..."
+mkdir -p "$HOME/.docker"
+CONFIG_FILE="$HOME/.docker/config.json"
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo '{}' > "$CONFIG_FILE"
+fi
+
+tmp=$(mktemp)
+jq --arg dir "$PLUGINS_DIR" '
+  if (.cliPluginsExtraDirs // []) | index($dir) then . else
+    .cliPluginsExtraDirs = ((.cliPluginsExtraDirs // []) + [$dir])
+  end
+  | if .credsStore == "desktop" then del(.credsStore) else . end
+' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+{{- else -}}
+{{- /* No-op on non-macOS: docker-compose-v2 provides `docker compose` natively. */ -}}
+{{- end -}}

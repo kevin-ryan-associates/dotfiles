@@ -1,0 +1,87 @@
+# =============================================================================
+# Package inventory — single source of truth for the run_once_before_install
+# install script. Consumed via `{{ .packages.* }}` in templates.
+#
+# Per AGENTS.md docs-sync rule: if you change a brew/apt/npm package here, also
+# update the README "Manual alternative" install lines in the same commit.
+# =============================================================================
+
+packages:
+  brew:
+    # Zsh ecosystem (all required for the .zshrc to work properly)
+    main:
+      - starship
+      - eza
+      - bat
+      - fzf
+      - zoxide
+      - fd
+      - git-delta
+      - lazygit
+      - lazydocker
+    # CLI utilities
+    cli:
+      - jq
+      - yq
+      - htop
+      - tree
+      - btop
+      - herdr
+    # Git platform CLIs
+    git_platform:
+      - gh
+      - glab
+    # Kubernetes tooling
+    k8s:
+      - kubectl
+      - helm
+      - k9s
+    # Build tools
+    build:
+      - cmake
+    # Neovim + language runtimes
+    dev:
+      - neovim
+      - node
+      - npm
+      - ripgrep
+  npm_global:
+    - "@fission-ai/openspec@latest"
+
+# macOS-only packages
+macos:
+  brew:
+    # Docker runtime (Colima — lightweight, no GUI). docker-compose provides the
+    # v2 compose plugin; run_onchange_before_configure-docker-cli-plugins wires
+    # cliPluginsExtraDirs into ~/.docker/config.json so `docker compose`
+    # resolves out of the box.
+    docker_runtime:
+      - colima
+      - docker
+      - docker-compose
+    casks:
+      - 1password-cli
+      - ghostty
+      - font-meslo-lg-nerd-font
+
+# Linux-only packages
+linux:
+  apt:
+    # Homebrew-on-Linux prereqs + sudo + zsh
+    - zsh
+    - git
+    - curl
+    - file
+    - ca-certificates
+    - build-essential
+    - procps
+    - fontconfig
+    - unzip
+  apt_docker:
+    # Native Linux Docker (not Colima). docker-compose-v2 provides the
+    # `docker compose` plugin natively — no ~/.docker/config.json wiring needed.
+    - docker.io
+    - docker-compose-v2
+  # MesloLGS Nerd Font. Casks install to ~/Library/Fonts (macOS-only); on Linux
+  # we download the .ttf to ~/.local/share/fonts and refresh the fontconfig cache.
+  nerd_font_url: "https://github.com/romkatp/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"

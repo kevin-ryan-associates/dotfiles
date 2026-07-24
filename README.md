@@ -16,6 +16,7 @@ Currently tracking:
 - **`lazygit`** — TUI git client with Tokyo Night colors
 - **`git`** — Git config with Tokyo Night delta diff colors
 - **`lazydocker`** — TUI Docker client with Tokyo Night colors
+- **`pi`** — [Pi](https://pi.dev/) open-source AI coding harness with Tokyo Night Moon theme
 - **`colima`** — Docker runtime (macOS; replaces Docker Desktop, no GUI)
 
 ## Why this exists
@@ -184,6 +185,7 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `cmake` | Build system generator | Required for Neovim plugin builds |
 | `colima` | Docker runtime (VM-based, macOS) | Replaces Docker Desktop; `colima start/stop` |
 | `openspec` | Spec-driven dev framework | Native opencode slash commands (`/opsx:propose`, etc.); telemetry opt-out via `OPENSPEC_TELEMETRY=0` |
+| `pi` | Open-source AI coding harness | `pi` to start; themed to Tokyo Night Moon via `~/.pi/agent/themes/tokyo-night-moon.json` (selected by jq-merge in `~/.pi/agent/settings.json`) |
 
 ### Banner
 
@@ -213,6 +215,7 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 | **lazydocker** | Tokyo Night Moon best-effort colors |
 | **delta** | Tokyo Night Moon diff colors in `~/.config/git/config` |
 | **hunk** | Custom theme inheriting `tokyo-night`; Moon-palette overrides for chrome + `syntax_scopes` in `~/.config/hunk/config.toml` |
+| **pi** | Custom JSON theme `tokyo-night-moon` in `~/.pi/agent/themes/`, selected via jq-merge patch to `~/.pi/agent/settings.json` |
 | **Zsh banner** | ANSI colors mapped to Tokyo Night Moon palette |
 
 ## Neovim
@@ -325,7 +328,7 @@ For reference, the package list lives in `.chezmoidata.yaml` at the source root.
 
 **Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 
-**npm globals:** `@fission-ai/openspec@latest`.
+**npm globals:** `@fission-ai/openspec@latest`, `@earendil-works/pi-coding-agent@latest`.
 
 **Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); `bat cache --build`.
 
@@ -535,6 +538,10 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (all platforms — lazygit reads XDG first on macOS) |
 | `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
+| `~/.pi/agent/themes/tokyo-night-moon.json` | ✅ | Pi theme: custom Tokyo Night Moon, 51 tokens + export |
+| `~/.pi/agent/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-pi-theme.sh.tmpl`) | jq merge only sets the `theme` key to `tokyo-night-moon`; preserves user keys (provider, model, thinking level) |
+| `~/.pi/agent/auth.json`, `~/.pi/agent/trust.json` | ❌ | Pi runtime auth/trust state — never track |
+| `~/.pi/agent/sessions/` | ❌ | Pi session history — runtime |
 | `~/.zsh_history` / `.bash_history` | ❌ | Shell history — contains commands that may include secrets |
 | `README.md`, `AGENTS.md`, `LICENSE` | tracked in source, ignored from deploy | Repo metadata — see `.chezmoiignore` |
 

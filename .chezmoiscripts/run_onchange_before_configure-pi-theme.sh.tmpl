@@ -1,0 +1,51 @@
+{{- /*
+=============================================================================
+configure-pi-theme — idempotent ~/.pi/agent/settings.json theme patcher
+
+Pi (the @earendil-works/pi-coding-agent open-source AI coding harness) loads
+its theme selection from ~/.pi/agent/settings.json. That file is NOT fully
+owned by the repo — pi writes runtime keys (defaultProvider, defaultModel,
+defaultThinkingLevel, lastChangelogVersion) and the user edits it interactively
+via /settings. A templated file target would clobber those keys; this jq merge
+preserves every existing field and only sets the `theme` scalar to
+`tokyo-night-moon` (the custom theme deployed by dot_pi/agent/themes/).
+
+Uses `run_onchange_before_` semantics:
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash), so re-applies don't churn ~/.pi/agent/settings.json's
+    mtime once the patch is stable.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.pi/agent/settings.json is NOT
+    a chezmoi-managed file; this script is the only writer for the `theme`
+    key. The theme JSON file (dot_pi/agent/themes/tokyo-night-moon.json) is
+    written in step 5 as a normal chezmoi file target; the ordering here only
+    matters relative to other run-scripts that might read this file's output.
+
+No-op on a fresh machine where pi has never been run (the ~/.pi/agent/ dir
+won't exist yet — pi creates it on first launch). The user runs `pi` once to
+initialize, then re-runs `chezmoi apply` to apply the theme selection. This
+is the same friendly-fail-mode pattern AGENTS.md describes for dot_zprofile
+on a machine where brew isn't installed yet.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+PI_DIR="$HOME/.pi/agent"
+SETTINGS_FILE="$PI_DIR/settings.json"
+
+# No-op if pi has never been run (dir or settings file doesn't exist).
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "==> Pi settings not found at $SETTINGS_FILE — pi not initialized yet."
+  echo "    Run 'pi' once to initialize, then re-run 'chezmoi apply' to select the theme."
+  exit 0
+fi
+
+echo "==> Selecting Tokyo Night Moon theme for pi (~/.pi/agent/settings.json)..."
+tmp=$(mktemp)
+jq --arg theme "tokyo-night-moon" '.theme = $theme' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+echo "    theme = tokyo-night-moon (other keys preserved)"
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

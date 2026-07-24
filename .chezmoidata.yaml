@@ -51,6 +51,7 @@ packages:
       - ripgrep
   npm_global:
     - "@fission-ai/openspec@latest"
+    - "@earendil-works/pi-coding-agent@latest"
 
 # macOS-only packages
 macos:

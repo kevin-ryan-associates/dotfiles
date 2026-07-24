@@ -18,7 +18,8 @@ specifies:
 
 Writes /usr/local/bin (outside $HOME), so this must stay a script —
 templates can only write inside $HOME. macOS-only — Linux never had Docker
-Desktop.
+Desktop. This build targets macOS (Darwin) only for now; when Linux support
+is re-added, this script stays macOS-only (it has no Linux analogue).
 =============================================================================
 */ -}}
 {{- if eq .chezmoi.os "darwin" -}}
@@ -36,5 +37,5 @@ for link in /usr/local/bin/docker-compose \
   fi
 done
 {{- else -}}
-{{- /* No-op on Linux — Docker Desktop never existed there. */ -}}
+{{- /* No-op on non-macOS. */ -}}
 {{- end -}}

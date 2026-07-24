@@ -15,8 +15,6 @@ system dialog mid-script.
 {{- if not (lookPath "git") -}}
 {{-   if eq .chezmoi.os "darwin" -}}
 {{-     fail "git not found. Install Xcode Command Line Tools first: xcode-select --install" -}}
-{{-   else if eq .chezmoi.os "linux" -}}
-{{-     fail "git not found. Install first: sudo apt-get update && sudo apt-get install -y git" -}}
 {{-   else -}}
 {{-     fail "git not found; install git before running chezmoi init" -}}
 {{-   end -}}

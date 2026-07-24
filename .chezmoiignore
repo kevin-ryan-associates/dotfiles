@@ -18,9 +18,6 @@ README.md
 AGENTS.md
 LICENSE
 
-# Docker test harness — not a config package, never in $HOME.
-test/
-
 # opencode runtime artifacts — checked into source so `chezmoi update` pulls
 # them, but ignored from deployment. (Under Stow, these were gitignored AND
 # leaked through the directory symlink; under chezmoi the live ~/.config/opencode/

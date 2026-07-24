@@ -11,8 +11,9 @@ install-mac.sh. Uses `run_onchange_before_` semantics:
   • `before_` runs during step 4 of the application order, before file
     targets are written — matters because ~/.docker/config.json is NOT
     a chezmoi-managed file; this script is the only writer.
-  • macOS-only via `{{ if eq .chezmoi.os "darwin" }}` — Linux resolves
-    docker compose natively (Docker Desktop is macOS/Windows).
+  • macOS-only. This build targets macOS (Darwin) only for now; the Linux
+    path (native docker-compose-v2, no cliPluginsExtraDirs wiring needed)
+    can be re-added with an `{{- else if eq .chezmoi.os "linux" }}` arm.
 
 Why a script, not a pure `*.tmpl` file target: a template target fully
 overwrites the destination, which would clobber any user-added keys in
@@ -60,5 +61,5 @@ jq --arg dir "$PLUGINS_DIR" '
   | if .credsStore == "desktop" then del(.credsStore) else . end
 ' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
 {{- else -}}
-{{- /* No-op on non-macOS: docker-compose-v2 provides `docker compose` natively. */ -}}
+{{- /* No-op on non-macOS. */ -}}
 {{- end -}}

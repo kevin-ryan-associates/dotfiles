@@ -2,13 +2,16 @@
 =============================================================================
 dot_zprofile.tmpl → ~/.zprofile  (Homebrew login-shell PATH)
 
-Replaces the `brew shellenv` injection block in install-mac.sh /
-install-linux.sh. The path it writes previously lived in the install scripts
-because `brew --prefix` is arch-conditional (/opt/homebrew, /usr/local, or
-/home/linuxbrew/.linuxbrew). That division — install scripts own
-machine-state-that-depends-on-runtime-values — no longer applies under
-chezmoi, because templates evaluate `output` (or, here, `stat` on candidate
-paths) at apply time on the actual target machine.
+Replaces the `brew shellenv` injection block in install-mac.sh. The path it
+writes previously lived in the install scripts because `brew --prefix` is
+arch-conditional (/opt/homebrew or /usr/local). That division — install
+scripts own machine-state-that-depends-on-runtime-values — no longer applies
+under chezmoi, because templates evaluate `stat` on candidate paths at apply
+time on the actual target machine.
+
+This build targets macOS only for now; the Linux brew path probes
+(/home/linuxbrew/.linuxbrew/bin/brew, ~/.linuxbrew/bin/brew) have been
+retired. Re-add them when Linux support returns.
 
 The template must NOT rely on `output "brew" "--prefix"` or `lookPath "brew"`
 directly, because:
@@ -19,12 +22,12 @@ directly, because:
   • `output "brew" "--prefix"` raises a template error if `brew` is not on
     PATH, which would break the apply.
 
-Instead we `stat` the candidate brew install paths (Apple-Silicon, Intel,
-Linux system, Linux user-prefix) and invoke the discovered brew binary via
-its absolute path. `stat` returns false-y when the file doesn't exist and
-structured data (truth-y) when it does — see chezmoi templates functions/stat
-docs. This works on fresh installs (brew is on disk after the `before_`
-install script runs) AND on existing installs, with zero OS branches.
+Instead we `stat` the candidate brew install paths (Apple-Silicon, Intel) and
+invoke the discovered brew binary via its absolute path. `stat` returns
+false-y when the file doesn't exist and structured data (truth-y) when it
+does — see chezmoi templates functions/stat docs. This works on fresh installs
+(brew is on disk after the `before_` install script runs) AND on existing
+installs, with zero arch branches in source.
 
 On truly fresh machines where brew isn't installed yet (and the user runs
 `chezmoi apply` without `init --apply`, skipping the install script), the
@@ -33,12 +36,8 @@ present) fills it in.
 =============================================================================
 */ -}}
 {{- $brew := "" -}}
-{{- range $p := list "/opt/homebrew/bin/brew" "/usr/local/bin/brew" "/home/linuxbrew/.linuxbrew/bin/brew" -}}
+{{- range $p := list "/opt/homebrew/bin/brew" "/usr/local/bin/brew" -}}
   {{- if stat $p -}}{{- $brew = $p -}}{{- end -}}
-{{- end -}}
-{{- if eq $brew "" -}}
-  {{- $userbrew := joinPath .chezmoi.homeDir ".linuxbrew/bin/brew" -}}
-  {{- if stat $userbrew -}}{{- $brew = $userbrew -}}{{- end -}}
 {{- end -}}
 # Added by dotfiles chezmoi template (.chezmoidata root → ~/.zprofile)
 # Source shellenv so `brew` is on PATH for interactive zsh shells.

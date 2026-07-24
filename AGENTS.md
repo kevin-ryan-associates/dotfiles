@@ -8,8 +8,8 @@ A personal dotfiles repository whose **purpose is repeatable development workflo
 
 - **[chezmoi](https://www.chezmoi.io/)** manages the source state at `~/.local/share/chezmoi/` (the repo root after `chezmoi init`). `chezmoi apply` writes the target state — real files (not symlinks) — into `$HOME`, rendering templates on the way.
 - **The public one-liner** `chezmoi init --apply kevin-ryan-associates/dotfiles` is the entry point. It installs chezmoi if missing, clones the source state, then applies end-to-end.
-- **`run_*` scripts under `.chezmoiscripts/`** install tooling and converge machine state that depends on dynamic or architecture-specific values. The single `run_once_before_install-packages.sh.tmpl` replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet — `{{ if eq .chezmoi.os "darwin" }}` / `{{ else if eq .chezmoi.os "linux" }}` branches replace the OS-dispatch logic.
-- **`.chezmoidata.yaml`** is the single source of truth for the cross-platform tool inventory. The install run-script renders the `brew install …` / `apt-get install -y …` / `npm install -g …` lines from `{{ range .packages.brew.main }}…{{ end }}` loops bound to it.
+- **`run_*` scripts under `.chezmoiscripts/`** install tooling and converge machine state that depends on dynamic or architecture-specific values. The single `run_once_before_install-packages.sh.tmpl` replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet. **This build currently targets macOS only** — the `{{ if eq .chezmoi.os "darwin" }}` arm is the sole install path; the `{{ else }}` arm fails fast on non-macOS. The Linux (`{{ else if eq .chezmoi.os "linux" }}`) arm is retired for now and can be reintroduced later; until then, ignore Linux-specific guidance below that references it.
+- **`.chezmoidata.yaml`** is the single source of truth for the tool inventory. The install run-script renders the `brew install …` / `npm install -g …` lines from `{{ range .packages.brew.main }}…{{ end }}` loops bound to it. (The `linux:` section is retired; reintroduce it alongside the Linux install arm.)
 
 A machine that has never seen this repo should reach a known-good state by running:
 
@@ -44,12 +44,12 @@ Diagnosing on the live machine is fine — `cat`, `ls -l`, `jq`, `docker compose
 | Static, machine-agnostic config (e.g. `starship.toml`, `btop.conf`, `init.lua`) | `dot_config/<app>/...` chezmoi source entry | Plain file target; renders verbatim |
 | Adding a Homebrew tool the user invokes | `.chezmoidata.yaml` `packages.brew.*` section | Single source of truth consumed by the install run-script. (Don't forget the README "What `.chezmoidata.yaml` installs" block if the user-facing list needs to reflect it — see docs-sync rule.) |
 | Adding a cask (macOS-only) | `.chezmoidata.yaml` `macos.brew.casks` | Same single-file principle. |
-| Adding an apt package (Linux-only) | `.chezmoidata.yaml` `linux.apt` or `linux.apt_docker` | Same. |
-| Platform-specific install step (e.g. apt base, Colima setup, font install) | `run_once_before_install-packages.sh.tmpl` with `{{ if eq .chezmoi.os "..." }}` branch | Idiomatic chezmoi; OS dispatch happens at template-render time, not via shell `if`. |
+| Adding an apt package (Linux-only — retired) | `.chezmoidata.yaml` `linux.apt` or `linux.apt_docker` (re-add when Linux install arm returns) | Same single-file principle. |
+| Platform-specific install step (e.g. Colima setup, font install) | `run_once_before_install-packages.sh.tmpl` with `{{ if eq .chezmoi.os "..." }}` branch | Idiomatic chezmoi; OS dispatch happens at template-render time, not via shell `if`. |
 | Machine-state file whose correct content depends on a runtime value (`brew --prefix` etc.) | Either a `.tmpl` chezmoi source file (when overwriting is OK) **or** a `run_onchange_before_…sh.tmpl` script (when the file must merge with existing content) | See "When to template vs. when to run-script" below. |
 | Cleanup of stale state from a tool the install script explicitly replaces | `run_once_after_…sh.tmpl` self-heal block (see convention below) | Old machines with the replaced tool have cruft; fresh machines have none. The block must no-op on fresh machines. |
 | Random pre-existing cruft unrelated to a replaced tool | README "Post-removal cleanup" area, manual | Not the install run-script's job to clean arbitrary user state. |
-| Anything at source root that isn't a deployable config (README, AGENTS, test harness, opencode runtime artifacts) | Add an entry to `.chezmoiignore` | Otherwise it deploys to `$HOME` on next apply. |
+| Anything at source root that isn't a deployable config (README, AGENTS, opencode runtime artifacts) | Add an entry to `.chezmoiignore` | Otherwise it deploys to `$HOME` on next apply. |
 
 ## When to template vs. when to run-script (for arch-conditional content)
 
@@ -59,7 +59,7 @@ The legacy rule — "if the file's content contains a path, version, or arch-con
 
 Use when the repo is the single owner of the target file's content. The template fully overwrites the destination on `chezmoi apply`.
 
-Canonical case in this repo: `dot_zprofile.tmpl` → `~/.zprofile`. The whole file is the brew shellenv line; nothing else competes for that namespace. The template probes `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`, `/home/linuxbrew/.linuxbrew/bin/brew`, `~/.linuxbrew/bin/brew` via `stat` (NOT `lookPath` — chezmoi's process PATH may not include a just-installed brew; see "Apply order and PATH" below) and emits the appropriate `eval "$(<brew path> shellenv)"` line. Zero OS branches, zero hardcoded paths.
+Canonical case in this repo: `dot_zprofile.tmpl` → `~/.zprofile`. The whole file is the brew shellenv line; nothing else competes for that namespace. The template probes `/opt/homebrew/bin/brew` and `/usr/local/bin/brew` via `stat` (NOT `lookPath` — chezmoi's process PATH may not include a just-installed brew; see "Apply order and PATH" below) and emits the appropriate `eval "$(<brew path> shellenv)"` line. Zero arch branches, zero hardcoded paths. (Linuxbrew candidate paths are retired; reinstate them when the Linux install arm returns.)
 
 **Caveat:** on a truly fresh machine where brew is not yet installed, the template renders to an empty file. A subsequent `chezmoi apply` (after brew is installed) fills it in. Don't gate the template on `lookPath "brew"` — `lookPath` is cached and won't re-resolve after the install run-script puts brew on disk.
 
@@ -93,7 +93,7 @@ This means `run_once_before_install-packages.sh.tmpl` (step 4) installs Homebrew
 - `output "brew" "--prefix"` in a template will *fail with a template error* on a machine where brew was just installed by the preceding `before_` script — chezmoi's PATH is the shell PATH as of `chezmoi apply` invocation, and the install script's `eval "$(.../brew shellenv)"` only updates the *script's* subshell.
 - `lookPath "brew"` likewise returns empty because (a) brew isn't on the parent PATH and (b) `lookPath` caches its first result.
 
-**Therefore:** templates that need brew's location must use `stat "/opt/homebrew/bin/brew"`, `stat "/usr/local/bin/brew"`, `stat "/home/linuxbrew/.linuxbrew/bin/brew"`, and `stat (joinPath .chezmoi.homeDir ".linuxbrew/bin/brew")` to probe candidate install paths. `stat` returns a truthy structured object if the file exists (no PATH dependency). This pattern is canonical for `dot_zprofile.tmpl` and the docker-cli-plugins run-script — copy it for any new template that needs to know where brew landed.
+**Therefore:** templates that need brew's location must use `stat "/opt/homebrew/bin/brew"` and `stat "/usr/local/bin/brew"` to probe candidate install paths. `stat` returns a truthy structured object if the file exists (no PATH dependency). This pattern is canonical for `dot_zprofile.tmpl` and the docker-cli-plugins run-script — copy it for any new template that needs to know where brew landed. (Re-add `stat "/home/linuxbrew/.linuxbrew/bin/brew"` and `stat (joinPath .chezmoi.homeDir ".linuxbrew/bin/brew")` when the Linux install arm returns.)
 
 Run-scripts themselves are bash and can `eval "$(.../brew shellenv)"` in-process to update their own PATH, exactly as the legacy install scripts did. That's how `run_once_before_install-packages.sh.tmpl` makes its subsequent `brew install …` lines find brew after a fresh Homebrew install.
 
@@ -110,12 +110,12 @@ See `.chezmoiscripts/run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl` for
 
 ## Install run-script conventions
 
-- **Idempotent.** Running `chezmoi apply` twice produces the same state. The `once_` script guards (re-runs only when the script's source content changes) and `onchange_` (re-runs only when the source content differs from the last-run hash) make this strict for the install scripts; `brew install` is free for already-installed formulae; `apt-get install -y` is free for already-installed debs; `jq` patches must guard against duplicates (`if … | index($x) then . else … + [$x] …`).
+- **Idempotent.** Running `chezmoi apply` twice produces the same state. The `once_` script guards (re-runs only when the script's source content changes) and `onchange_` (re-runs only when the source content differs from the last-run hash) make this strict for the install scripts; `brew install` is free for already-installed formulae; `jq` patches must guard against duplicates (`if … | index($x) then . else … + [$x] …`).
 - **No secrets.** Never inline an API key, token, or password. Reference environment variables only; fetch them via the password manager CLI at shell startup (see README "Secret hygiene").
-- **Architecture-agnostic.** Use `stat` to probe brew paths, `output "brew" "--prefix"` only after confirming it's already on PATH for the chezmoi process. Never hardcode `/usr/local`, `/opt/homebrew`, or `/home/linuxbrew/.linuxbrew` into a non-template source file or a non-templated run-script.
+- **Architecture-agnostic.** Use `stat` to probe brew paths, `output "brew" "--prefix"` only after confirming it's already on PATH for the chezmoi process. Never hardcode `/usr/local` or `/opt/homebrew` into a non-template source file or a non-templated run-script.
 - **OS dispatch via template, not shell.** `{{ if eq .chezmoi.os "darwin" }} … {{ else if eq .chezmoi.os "linux" }} … {{ else }}{{ fail "…" }}{{ end }}` keeps the install logic in one file. Do not split install logic into per-OS files.
 - **One tool per concept.** Don't install two tools that do the same job unless one explicitly replaces the other (and there's a self-heal block for the replaced one).
-- **Order matters.** Use `before_` for the package-install run-script so brew is on disk before template files that need `brew --prefix` render. Use `after_` for cleanup chores that should only run once config is in place. The `set-default-shell` on Linux is `after_` because it's a final-state fixup, not a prerequisite for anything else.
+- **Order matters.** Use `before_` for the package-install run-script so brew is on disk before template files that need `brew --prefix` render. Use `after_` for cleanup chores that should only run once config is in place. (The Linux-only `set-default-shell` script was `after_`; it is retired for now — reintroduce it as `after_` alongside the Linux install arm, since `chsh -s zsh` is a final-state fixup, not a prerequisite for anything else.)
 
 ## Source state conventions
 
@@ -147,7 +147,7 @@ chezmoi unmanaged     # anything chezmoi sees in source but isn't managing — f
 
 ## Docs-sync rule (hard convention)
 
-`.chezmoidata.yaml` (the authoritative package inventory) and the README "What `.chezmoidata.yaml` installs" block both describe the package set. **They must stay in sync.** When you add or change a formula/cask/apt/npm package in `.chezmoidata.yaml`, update the corresponding README block in the same change. AGENTS.md treats drift between them as a defect.
+`.chezmoidata.yaml` (the authoritative package inventory) and the README "What `.chezmoidata.yaml` installs" block both describe the package set. **They must stay in sync.** When you add or change a formula/cask/npm package in `.chezmoidata.yaml`, update the corresponding README block in the same change. AGENTS.md treats drift between them as a defect.
 
 The README description is grouped by platform with prose summaries, not line-for-line; `.chezmoidata.yaml` is the authoritative source. If they disagree, `.chezmoidata.yaml` is truth and the README is the bug — but AGENTS.md requires you to fix the README in the same change rather than leave a known mismatch. The two-location hazard that motivated this rule under Stow (`brew-packages.sh` *and* the README install blocks *and* the install scripts) is now down to two locations — closing one of the long-standing gaps that drove this migration.
 
@@ -175,7 +175,7 @@ If a `run_*` script step requires sudo and your environment can't prompt (no TTY
 
 - **Report it explicitly.** Don't claim the sudo step succeeded.
 - **Verify the steps that don't need sudo** (brew install, jq patch, file writes) actually worked.
-- **Tell the user to run `chezmoi apply` themselves** in a real terminal to exercise the sudo path (`chsh -s zsh`, the Docker Desktop broken-symlink cleanup if present).
+- **Tell the user to run `chezmoi apply` themselves** in a real terminal to exercise the sudo path (the Docker Desktop broken-symlink cleanup, if present).
 
 False success claims are the worst AGENTS.md violation. Ambient silence about a skipped sudo path is the second-worst.
 
@@ -194,13 +194,12 @@ False success claims are the worst AGENTS.md violation. Ambient silence about a 
 ## Pointers
 
 - **README.md** — full project context, chezmoi source layout, theme policy, fresh-machine setup. Read it for the big picture; AGENTS.md is for *how to make changes safely*.
-- **.chezmoidata.yaml** — static package inventory. Single source of truth consumed by `run_once_before_install-packages.sh.tmpl`. Add brew formulae / casks / apt / npm globals here.
+- **.chezmoidata.yaml** — static package inventory. Single source of truth consumed by `run_once_before_install-packages.sh.tmpl`. Add brew formulae / casks / npm globals here. (The `linux:` apt section is retired; reintroduce it with the Linux install arm.)
 - **.chezmoi.toml.tmpl** — init config template. Fails early if git missing.
 - **.chezmoiignore** — non-config source-root entries that must never deploy to `$HOME`.
-- **.chezmoiscripts/run_once_before_install-packages.sh.tmpl** — the install logic. OS-branched via `{{ if eq .chezmoi.os "..." }}`. Replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet.
+- **.chezmoiscripts/run_once_before_install-packages.sh.tmpl** — the install logic. macOS-only via `{{ if eq .chezmoi.os "darwin" }}`; the `{{ else }}` arm fails fast. Replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet. (Linux arm retired — re-add the `{{ else if eq .chezmoi.os "linux" }}` branch to bring it back.)
 - **.chezmoiscripts/run_onchange_before_configure-docker-cli-plugins.sh.tmpl** — jq merge on `~/.docker/config.json` (macOS only).
 - **.chezmoiscripts/run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl** — self-heal for stale Docker Desktop symlinks (macOS only).
-- **.chezmoiscripts/run_once_after_set-default-shell.sh.tmpl** — `chsh -s zsh` (Linux only).
-- **dot_zprofile.tmpl** — `~/.zprofile` (brew shellenv line, resolved via `stat` on candidate brew paths).
+- **dot_zprofile.tmpl** — `~/.zprofile` (brew shellenv line, resolved via `stat` on candidate brew paths: `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`).
 - **dot_config/**, **dot_zshrc**, **dot_zshenv** — config packages, chezmoi-named.
-- **`test/`** — Docker-based test harness for the Ubuntu apply path. **Not** a chezmoi source entry; never add it to `.chezmoiignore` as something to deploy. (It's already ignored — see `.chezmoiignore`.) Same for the repo-root `.dockerignore` (Docker build artifact, not config).
+- **`test/`** — *retired.* Was a Docker-based test harness for the Ubuntu apply path; removed when the Linux install path was retired. Re-add it alongside the Linux install arm.

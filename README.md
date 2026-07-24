@@ -32,8 +32,8 @@ chezmoi keeps the repo (the "source state") in its own directory, separate from 
 
 - **Explicit tracking.** Only files you deliberately add with `chezmoi add` get deployed. Nothing is tracked by accident.
 - **Templating.** Files whose correct content depends on a runtime value (`brew --prefix`, the OS, the hostname) live as `.tmpl` sources that render at apply time on the actual machine — no separate install script needed for the bits that depend on the world. (The prior Stow setup worked around this by keeping those files out of the repo entirely and writing them from a bash install script. chezmoi closes that gap.)
-- **Run scripts.** Package installation (brew/apt/npm), the `~/.docker/config.json` jq merge, the Docker-Desktop symlink self-heal, and Linux `chsh -s zsh` all live as `run_*` scripts next to the config they relate to — same repo, same source of truth.
-- **Single source of truth for packages.** `.chezmoidata.yaml` lists every brew formula, cask, apt package, and npm global; the install run-script renders from it. Edits to the package list happen in one place.
+- **Run scripts.** Package installation (brew/npm), the `~/.docker/config.json` jq merge, and the Docker-Desktop symlink self-heal all live as `run_*` scripts next to the config they relate to — same repo, same source of truth.
+- **Single source of truth for packages.** `.chezmoidata.yaml` lists every brew formula, cask, and npm global; the install run-script renders from it. Edits to the package list happen in one place.
 
 ## How it works
 
@@ -66,21 +66,20 @@ The repo root *is* the chezmoi source directory. After `chezmoi init kevin-ryan-
 │   │   ├── tui.json
 │   │   └── themes/tokyonight-moon.json
 │   └── ghostty/config               → ~/.config/ghostty/config
-├── .chezmoidata.yaml                 # static package inventory (brew/apt/npm lists)
+├── .chezmoidata.yaml                 # static package inventory (brew/cask/npm lists)
 ├── .chezmoi.toml.tmpl                # init config — fails early if git missing
-├── .chezmoiignore                   # README/AGENTS/test/ + opencode runtime artifacts
+├── .chezmoiignore                   # README/AGENTS + opencode runtime artifacts
 └── .chezmoiscripts/
-    ├── run_once_before_install-packages.sh.tmpl              # brew install + casks + apt + opencode + openspec
+    ├── run_once_before_install-packages.sh.tmpl              # brew install + casks + opencode + openspec
     ├── run_onchange_before_configure-docker-cli-plugins.sh.tmpl  # macOS jq patch to ~/.docker/config.json
-    ├── run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl    # self-heal broken /usr/local/bin links
-    └── run_once_after_set-default-shell.sh.tmpl              # Linux: chsh -s zsh
+    └── run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl    # self-heal broken /usr/local/bin links
 ```
 
 When you run `chezmoi apply`, chezmoi:
 
 1. Runs `run_before_` scripts (installs packages before any templated config needs `brew --prefix`).
 2. Writes every target file (real files, not symlinks) to `$HOME`, rendering templates on the way.
-3. Runs `run_after_` scripts (Docker Desktop cleanup, `chsh`).
+3. Runs `run_after_` scripts (Docker Desktop cleanup).
 
 > **The rules that matter:**
 > - Editing a deployed file (`~/.zshrc`) does **not** edit the source — it edits a copy. To persist a change, either `chezmoi re-add` (copies the live file back into source) or `chezmoi edit ~/.zshrc` (opens the source in `$EDITOR`, then `chezmoi apply` to deploy). This is the inverse of the Stow symlink model; see [Syncing](#syncing--and-what-chezmoi-apply-actually-does).
@@ -267,27 +266,17 @@ sh -c "$(curl -fsSL https://chezmoi.io/get)" -- init --apply kevin-ryan-associat
 
 This installs chezmoi if missing, clones the source state into `~/.local/share/chezmoi/`, then runs `chezmoi apply` end-to-end. The apply phase:
 
-- Runs `run_once_before_install-packages.sh.tmpl` — installs Homebrew (and apt base on Linux) if missing, then every formula/cask/apt/npm package listed in `.chezmoidata.yaml`.
+- Runs `run_once_before_install-packages.sh.tmpl` — installs Homebrew if missing, then every formula/cask/npm package listed in `.chezmoidata.yaml`.
 - Writes every config file from source into `$HOME`, rendering templates on the way. Two templated files retire the legacy install-script-as-machine-state pattern:
-  - `dot_zprofile.tmpl` probes `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`, `/home/linuxbrew/.linuxbrew/bin/brew`, `~/.linuxbrew/bin/brew` via `stat` and emits the matching `eval "$(.../brew shellenv)"` line. No more arch-conditional heredoc block in an install script.
-  - `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` does the `~/.docker/config.json` jq merge (macOS only, preserving existing keys) — the same logic the legacy install script owned, now sitting next to the config it touches.
-- Runs `run_once_after_*` scripts — the Docker Desktop symlink self-heal (macOS) and `chsh -s zsh` (Linux).
+  - `dot_zprofile.tmpl` probes `/opt/homebrew/bin/brew` and `/usr/local/bin/brew` via `stat` and emits the matching `eval "$(.../brew shellenv)"` line. No more arch-conditional heredoc block in an install script.
+  - `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` does the `~/.docker/config.json` jq merge (preserving existing keys) — the same logic the legacy install script owned, now sitting next to the config it touches.
+- Runs `run_once_after_*` scripts — the Docker Desktop symlink self-heal.
 
 Then continue to [First Launch](#3-first-launch) below.
 
 > **Heads up — Xcode Command Line Tools:** on a truly fresh macOS, the Homebrew install step inside `install-packages` pops a GUI dialog for CLT. Click Install, wait for it to finish, and the apply continues. This is unavoidable — it's Homebrew's own prerequisite. If `git` is also missing, `.chezmoi.toml.tmpl` aborts `chezmoi init` immediately with the message `xcode-select --install`.
 
-> **First apply on a fresh machine, friendly fail mode:** if you skip `chezmoi init` and run a raw `chezmoi apply` against a machine that doesn't have brew installed yet, `dot_zprofile.tmpl`'s `stat` probes all four candidate brew paths, finds none, and renders an empty `~/.zprofile`. A subsequent `chezmoi apply` (after installing brew) fills it in. No apply fails on a missing binary.
-
-> **Linux — run `sudo -v` first for a non-interactive apply.** The Ubuntu install path makes several `sudo` calls (apt base, docker, `usermod`, `chsh -s zsh`). Each would otherwise prompt for your password independently. Cache sudo credentials once before applying so the apply runs uninterrupted:
->
-> ```bash
-> sudo -v && chezmoi init --apply kevin-ryan-associates/dotfiles   # fresh machine
-> # or on an existing checkout:
-> sudo -v && chezmoi apply
-> ```
->
-> The install script also sets `DEBIAN_FRONTEND=noninteractive` and passes `--force-confdef --force-confold` to apt so dpkg config-file and service-restart dialogs auto-resolve without prompting. The single `sudo -v` timestamp (~5-15 min default on Ubuntu) comfortably covers the whole apply.
+> **First apply on a fresh machine, friendly fail mode:** if you skip `chezmoi init` and run a raw `chezmoi apply` against a machine that doesn't have brew installed yet, `dot_zprofile.tmpl`'s `stat` probes both candidate brew paths, finds none, and renders an empty `~/.zprofile`. A subsequent `chezmoi apply` (after installing brew) fills it in. No apply fails on a missing binary.
 
 ### 2. Manual alternative (if you prefer not to pipe to bash)
 
@@ -296,7 +285,7 @@ The one-liner above does exactly this, step by step:
 #### Install chezmoi
 
 ```bash
-# macOS or Linux (chezmoi is a single Go binary)
+# macOS (chezmoi is a single Go binary)
 brew install chezmoi
 ```
 
@@ -406,7 +395,7 @@ We do **not** allow-list `@fission-ai/openspec`'s postinstall in the install run
 
 The `set -euo pipefail` in the install run-script is not broken by the warning: npm's exit code is `0` when the install succeeds with the script suppressed.
 
-### 7. Start Colima (Docker runtime — macOS only)
+### 7. Start Colima (Docker runtime)
 
 Colima replaces Docker Desktop with a lightweight, CLI-only Docker runtime:
 
@@ -423,8 +412,6 @@ Colima creates a VM with default specs (2 CPU, 2GB RAM). To customize:
 ```bash
 colima start --cpu 4 --memory 8 --disk 60
 ```
-
-On Linux, Docker runs natively — no Colima. Start the daemon with `sudo systemctl start docker`.
 
 ## Conflicts on a fresh machine
 

@@ -64,6 +64,9 @@ brew install {{ range .packages.brew.cli }}{{ . }} {{ end }}
 echo "==> Installing Git platform CLIs..."
 brew install {{ range .packages.brew.git_platform }}{{ . }} {{ end }}
 
+echo "==> Installing Cloud platform CLIs..."
+brew install {{ range .packages.brew.cloud }}{{ . }} {{ end }}
+
 echo "==> Installing Kubernetes tooling..."
 brew install {{ range .packages.brew.k8s }}{{ . }} {{ end }}
 

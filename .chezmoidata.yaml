@@ -39,7 +39,9 @@ packages:
     git_platform:
       - gh
       - glab
-    # Kubernetes tooling
+    # Cloud platform CLIs
+    cloud:
+      - azure-cli  # Microsoft Azure CLI (provides the `az` binary); core brew formula
     k8s:
       - kubectl
       - helm

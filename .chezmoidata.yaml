@@ -53,6 +53,21 @@ packages:
     - "@fission-ai/openspec@latest"
     - "@earendil-works/pi-coding-agent@latest"
 
+# Pi (the @earendil-works/pi-coding-agent harness) packages installed into
+# ~/.pi/agent/settings.json's `packages` array by
+# run_onchange_before_configure-pi-packages.sh.tmpl. Append-only: entries here
+# are *ensured present* by the jq merge — interactive `pi install` adds and any
+# entries later removed from this list are left on disk (removal requires
+# `pi remove npm:<pkg>`).
+pi:
+  packages:
+    - npm:pi-mcp-adapter        # MCP (Model Context Protocol) server support
+    - npm:pi-subagents          # task delegation / chains / parallel / TUI clarify
+    - npm:pi-web-access         # web search + URL fetch + GitHub clone + PDF/YT
+    - npm:pi-hermes-memory      # local memory + SQLite FTS5 search + secret scanning
+    - npm:@narumitw/pi-plan-mode # Codex-like read-only /plan collaboration mode
+    - npm:context-mode          # MCP plugin: ~98% context savings via sandboxed exec + FTS5 KB
+
 # macOS-only packages
 macos:
   brew:

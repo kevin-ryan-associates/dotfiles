@@ -333,6 +333,8 @@ For reference, the package list lives in `.chezmoidata.yaml` at the source root.
 
 **npm globals:** `@fission-ai/openspec@latest`, `@earendil-works/pi-coding-agent@latest`.
 
+**Pi packages** (curated set, idempotently ensured in `~/.pi/agent/settings.json`'s `packages` array by `run_onchange_before_configure-pi-packages.sh.tmpl`): `npm:pi-mcp-adapter` (MCP server support), `npm:pi-subagents` (task delegation / chains / parallel / TUI clarify), `npm:pi-web-access` (web search + URL fetch + GitHub clone + PDF/YT), `npm:pi-hermes-memory` (local memory + SQLite FTS5 search + secret scanning), `npm:@narumitw/pi-plan-mode` (Codex-like read-only `/plan` mode), `npm:context-mode` (MCP plugin: ~98% context savings via sandboxed code exec + FTS5 knowledge base). The merge is **append-only** — entries are *ensured present*, never removed; user `pi install` adds and entries dropped from `.chezmoidata.yaml` stay on disk (removal requires `pi remove npm:<pkg>`). pi auto-installs any missing tarballs on its next startup.
+
 **Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
 
 > Linux (Ubuntu) support is retired for now — `chezmoi apply` fails fast with an explicit message on non-macOS. The Linux branch can be re-added later by reintroducing an `{{- else if eq .chezmoi.os "linux" }}` arm in `run_once_before_install-packages.sh.tmpl` and a `linux:` section in `.chezmoidata.yaml`.
@@ -542,7 +544,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.pi/agent/themes/tokyo-night-moon.json` | ✅ | Pi theme: custom Tokyo Night Moon, 51 tokens + export |
-| `~/.pi/agent/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-pi-theme.sh.tmpl`) | jq merge only sets the `theme` key to `tokyo-night-moon`; preserves user keys (provider, model, thinking level) |
+| `~/.pi/agent/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-pi-theme.sh.tmpl` and `run_onchange_before_configure-pi-packages.sh.tmpl`) | Two jq merges: one sets the `theme` key to `tokyo-night-moon`, the other *ensures presence* of the curated `packages` array from `.chezmoidata.yaml`'s `pi.packages` list. Both are append-only / scalar-set, preserving every other key (provider, model, thinking level). Interactive `pi install`/`pi remove` writes are never overwritten; `chezmoi apply` only adds curated entries, never prunes |
 | `~/.pi/agent/auth.json`, `~/.pi/agent/trust.json` | ❌ | Pi runtime auth/trust state — never track |
 | `~/.pi/agent/sessions/` | ❌ | Pi session history — runtime |
 | `~/.claude/themes/tokyo-night-moon.json` | ✅ | Claude Code theme: custom Tokyo Night Moon, ~40 token overrides on `dark` base |

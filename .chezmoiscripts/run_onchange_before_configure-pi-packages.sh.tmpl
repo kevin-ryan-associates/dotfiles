@@ -1,0 +1,72 @@
+{{- /*
+=============================================================================
+configure-pi-packages — idempotent ~/.pi/agent/settings.json packages patcher
+
+Pi (the @earendil-works/pi-coding-agent open-source AI coding harness) reads
+its installed package list from the `packages` array in
+~/.pi/agent/settings.json. That file is NOT fully owned by the repo — pi
+writes runtime keys (defaultProvider, defaultModel, defaultThinkingLevel,
+lastChangelogVersion) and the user edits the file interactively via `pi
+install`/`pi remove`. A templated file target would clobber those keys; this
+jq merge preserves every existing field and only appends any specifiers from
+.chezmoidata.yaml's `pi.packages` list that aren't already present.
+
+Uses `run_onchange_before_` semantics:
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash). The script body is rendered from
+    `{{ range .pi.packages }}` so its hash changes whenever the inventory does
+    — triggering a re-run exactly when the curated list moves.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.pi/agent/settings.json is NOT a
+    chezmoi-managed file; this script (alongside the theme script) is the only
+    writer for the `packages` key.
+
+Append-only contract. The jq patch:
+  .packages as $have
+  | ($want - $have) as $missing
+  | .packages = ($have + $missing)
+This *ensures presence* of the curated specifiers; it never removes entries.
+Rationale: an interactive `pi install npm:foo` adds an entry the user chose;
+`chezmoi apply` must not silently delete user choices from a file the user
+co-owns. Removing a curated entry from .chezmoidata.yaml also leaves it on
+disk — pruning requires `pi remove npm:<pkg>`. This mirrors the
+docker-cli-plugins jq-merge pattern documented in AGENTS.md as the canonical
+approach for target files the repo does not fully own.
+
+No-op on a fresh machine where pi has never been run (the ~/.pi/agent/ dir
+won't exist yet — pi creates it on first launch). The user runs `pi` once to
+initialize, then re-runs `chezmoi apply` to install curated packages. Same
+friendly-fail-mode pattern AGENTS.md describes for dot_zprofile and for the
+pi theme script on a machine where pi isn't initialized yet.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+PI_DIR="$HOME/.pi/agent"
+SETTINGS_FILE="$PI_DIR/settings.json"
+
+# No-op if pi has never been run (dir or settings file doesn't exist).
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "==> Pi settings not found at $SETTINGS_FILE — pi not initialized yet."
+  echo "    Run 'pi' once to initialize, then re-run 'chezmoi apply' to install curated packages."
+  exit 0
+fi
+
+# Desired specifier list, rendered by chezmoi at apply time from
+# .chezmoidata.yaml's pi.packages section as a JSON array string.
+WANT='{{ .pi.packages | toJson }}'
+
+echo "==> Ensuring curated pi packages are present in $SETTINGS_FILE..."
+tmp=$(mktemp)
+jq --argjson want "$WANT" '
+  ($want - (.packages // [])) as $missing
+  | .packages = ((.packages // []) + $missing)
+' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+
+INSTALLED=$(jq -rc '.packages | join(", ")' "$SETTINGS_FILE")
+echo "    packages = $INSTALLED (other keys preserved; interactive installs never removed)"
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

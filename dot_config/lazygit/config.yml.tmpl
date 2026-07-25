@@ -1,0 +1,35 @@
+{{- /*
+=============================================================================
+lazygit/config.yml.tmpl → ~/.config/lazygit/config.yml
+
+Tokyo Night Moon UI colors, rendered from .chezmoidata.yaml's
+`theme.tokyo_night_moon` palette.
+=============================================================================
+*/ -}}
+gui:
+  nerdFontsVersion: "3"
+  theme:
+    activeBorderColor:
+      - "{{ .theme.tokyo_night_moon.orange }}"
+      - "bold"
+    inactiveBorderColor:
+      - "{{ .theme.tokyo_night_moon.border_teal }}"
+    searchingActiveBorderColor:
+      - "{{ .theme.tokyo_night_moon.orange }}"
+      - "bold"
+    optionsTextColor:
+      - "{{ .theme.tokyo_night_moon.blue }}"
+    selectedLineBgColor:
+      - "{{ .theme.tokyo_night_moon.bg_highlight }}"
+    cherryPickedCommitFgColor:
+      - "{{ .theme.tokyo_night_moon.blue }}"
+    cherryPickedCommitBgColor:
+      - "{{ .theme.tokyo_night_moon.magenta }}"
+    markedBaseCommitFgColor:
+      - "{{ .theme.tokyo_night_moon.blue }}"
+    markedBaseCommitBgColor:
+      - "{{ .theme.tokyo_night_moon.yellow }}"
+    unstagedChangesColor:
+      - "{{ .theme.tokyo_night_moon.red1 }}"
+    defaultFgColor:
+      - "{{ .theme.tokyo_night_moon.fg }}"

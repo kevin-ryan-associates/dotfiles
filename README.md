@@ -221,6 +221,12 @@ This dotfiles stack uses the **[Tokyo Night](https://tokyonight.org/)** theme ac
 | **claude** | Custom JSON theme `tokyo-night-moon` in `~/.claude/themes/`, selected via jq-merge patch to `~/.claude/settings.json` (preserves existing hooks block) |
 | **Zsh banner** | ANSI colors mapped to Tokyo Night Moon palette |
 
+### Centralized palette source
+
+The canonical Moon palette now lives in one place: `.chezmoidata.yaml` under `theme.tokyo_night_moon`. The templated tool configs (starship, git/delta, lazygit, hunk, btop theme, ghostty, the `dot_zshrc.tmpl` fzf color block, and the pi/claude/opencode theme JSON files — stored as `*.tmpl` sources) reference it via `{{ .theme.tokyo_night_moon.<key> }}`, so editing a color there propagates to every templated config on the next `chezmoi apply`. The per-tool integration rows above still hold; rendering is transparent (the deployed files resolve to the same literal hex values as before — `chezmoi verify` stays green).
+
+One consumer is deliberately **not** templated this pass: `dot_config/bat/themes/tokyonight_moon.tmTheme` — a vendored TextMate grammar with hundreds of scope→hex entries. Centralizing it is mechanical but bulk-heavy and regression-prone, so it stays literal (its values are already self-consistent with the palette); templating it is tracked as a follow-up.
+
 ## Neovim
 
 This repo uses [AstroNvim](https://astronvim.com/) as the base configuration. The following customizations are layered on top:
@@ -325,7 +331,7 @@ chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_befor
 
 #### What `.chezmoidata.yaml` installs
 
-For reference, the package list lives in `.chezmoidata.yaml` at the source root. It currently prescribes:
+For reference, the package list **and** the centralized Tokyo Night Moon palette (`theme.tokyo_night_moon`) live in `.chezmoidata.yaml` at the source root. The palette is consumed read-only by the `*.tmpl` tool configs, not by an install script. The inventory currently prescribes:
 
 **Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk` (CLI utilities), `gh glab` (Git platform CLIs), `kubectl helm k9s` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
 
@@ -335,7 +341,7 @@ For reference, the package list lives in `.chezmoidata.yaml` at the source root.
 
 **Pi packages** (curated set, idempotently ensured in `~/.pi/agent/settings.json`'s `packages` array by `run_onchange_before_configure-pi-packages.sh.tmpl`): `npm:pi-mcp-adapter` (MCP server support), `npm:pi-subagents` (task delegation / chains / parallel / TUI clarify), `npm:pi-web-access` (web search + URL fetch + GitHub clone + PDF/YT), `npm:pi-hermes-memory` (local memory + SQLite FTS5 search + secret scanning), `npm:@narumitw/pi-plan-mode` (Codex-like read-only `/plan` mode), `npm:context-mode` (MCP plugin: ~98% context savings via sandboxed code exec + FTS5 knowledge base). The merge is **append-only** — entries are *ensured present*, never removed; user `pi install` adds and entries dropped from `.chezmoidata.yaml` stay on disk (removal requires `pi remove npm:<pkg>`). pi auto-installs any missing tarballs on its next startup.
 
-**Also installed:** OpenCode installer (`curl | bash -- --no-modify-path`); Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
+**Also installed:** OpenCode installer (upstream `opencode-ai/opencode` — `curl | bash -- --no-modify-path`); Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
 
 > Linux (Ubuntu) support is retired for now — `chezmoi apply` fails fast with an explicit message on non-macOS. The Linux branch can be re-added later by reintroducing an `{{- else if eq .chezmoi.os "linux" }}` arm in `run_once_before_install-packages.sh.tmpl` and a `linux:` section in `.chezmoidata.yaml`.
 

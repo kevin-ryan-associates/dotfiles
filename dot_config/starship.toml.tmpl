@@ -1,3 +1,16 @@
+{{- /*
+=============================================================================
+starship.toml.tmpl → ~/.config/starship.toml
+
+Tokyo Night Moon prompt. The `[palettes.tokyo_night]` table values are
+rendered at apply time from .chezmoidata.yaml's `theme.tokyo_night_moon`
+palette — so a color edit there propagates here on the next `chezmoi apply`.
+Starship resolves `$palette` references at runtime; the rendered TOML still
+defines the palette table with the literal hex values (templates expand to
+those literals), so the deployed file is byte-identical to the pre-template
+flat version.
+=============================================================================
+*/ -}}
 # Starship config -- Tokyo Night Moon palette
 # based on folke/tokyonight.nvim moon variant
 
@@ -27,20 +40,20 @@ palette = "tokyo_night"
 
 [palettes.tokyo_night]
 # panel backgrounds (dark)
-color_panel = "#1e2030"
-color_dir   = "#222436"
-color_git   = "#2f334d"
-color_lang  = "#222436"
-color_time  = "#2f334d"
+color_panel = "{{ .theme.tokyo_night_moon.bg_alt }}"
+color_dir   = "{{ .theme.tokyo_night_moon.bg }}"
+color_git   = "{{ .theme.tokyo_night_moon.bg_highlight }}"
+color_lang  = "{{ .theme.tokyo_night_moon.bg }}"
+color_time  = "{{ .theme.tokyo_night_moon.bg_highlight }}"
 # accents
-color_cyan    = "#86e1fc"
-color_green   = "#c3e88d"
-color_magenta = "#c099ff"
-color_blue    = "#82aaff"
-color_amber   = "#ffc777"
-color_red     = "#ff757f"
-color_text    = "#c8d3f5"
-color_dim     = "#636da6"
+color_cyan    = "{{ .theme.tokyo_night_moon.cyan }}"
+color_green   = "{{ .theme.tokyo_night_moon.green }}"
+color_magenta = "{{ .theme.tokyo_night_moon.magenta }}"
+color_blue    = "{{ .theme.tokyo_night_moon.blue }}"
+color_amber   = "{{ .theme.tokyo_night_moon.yellow }}"
+color_red     = "{{ .theme.tokyo_night_moon.red }}"
+color_text    = "{{ .theme.tokyo_night_moon.fg }}"
+color_dim     = "{{ .theme.tokyo_night_moon.comment }}"
 
 [os]
 disabled = true
@@ -116,11 +129,11 @@ style = "bg:color_time fg:color_cyan"
 format = '[ 󰥔 $time ]($style)'
 
 [character]
-success_symbol = '[❯](bold #c3e88d)'
-error_symbol   = '[❯](bold #ff757f)'
-vimcmd_symbol  = '[❮](bold #ffc777)'
+success_symbol = '[❯](bold {{ .theme.tokyo_night_moon.green }})'
+error_symbol   = '[❯](bold {{ .theme.tokyo_night_moon.red }})'
+vimcmd_symbol  = '[❮](bold {{ .theme.tokyo_night_moon.yellow }})'
 
 [cmd_duration]
 min_time = 500
 format = "[ took $duration]($style) "
-style = "fg:#ffc777"
+style = "fg:{{ .theme.tokyo_night_moon.yellow }}"

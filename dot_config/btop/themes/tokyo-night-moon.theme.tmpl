@@ -1,0 +1,91 @@
+{{- /*
+=============================================================================
+btop/themes/tokyo-night-moon.theme.tmpl
+  → ~/.config/btop/themes/tokyo-night-moon.theme
+
+Tokyo Night Moon theme for btop, rendered from .chezmoidata.yaml's
+`theme.tokyo_night_moon` palette. btop reads `theme[key]="value"` lines;
+the rendered file keeps the flat key=value format btop expects.
+=============================================================================
+*/ -}}
+# Theme: tokyo-night-moon
+# Based on folke/tokyonight.nvim moon variant
+
+# Main bg
+theme[main_bg]="{{ .theme.tokyo_night_moon.bg }}"
+
+# Main text color
+theme[main_fg]="{{ .theme.tokyo_night_moon.fg }}"
+
+# Title color for boxes
+theme[title]="{{ .theme.tokyo_night_moon.fg }}"
+
+# Highlight color for keyboard shortcuts
+theme[hi_fg]="{{ .theme.tokyo_night_moon.cyan }}"
+
+# Background color of selected item in processes box
+theme[selected_bg]="{{ .theme.tokyo_night_moon.bg_highlight }}"
+
+# Foreground color of selected item in processes box
+theme[selected_fg]="{{ .theme.tokyo_night_moon.fg }}"
+
+# Color of inactive/disabled text
+theme[inactive_fg]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Misc colors for processes box including mini cpu graphs, details memory graph and details status text
+theme[proc_misc]="{{ .theme.tokyo_night_moon.cyan }}"
+
+# Cpu box outline color
+theme[cpu_box]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Memory/disks box outline color
+theme[mem_box]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Net up/down box outline color
+theme[net_box]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Processes box outline color
+theme[proc_box]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Box divider line and small boxes line color
+theme[div_line]="{{ .theme.tokyo_night_moon.comment }}"
+
+# Temperature graph colors
+theme[temp_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[temp_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[temp_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# CPU graph colors
+theme[cpu_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[cpu_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[cpu_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Mem/Disk free meter
+theme[free_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[free_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[free_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Mem/Disk cached meter
+theme[cached_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[cached_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[cached_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Mem/Disk available meter
+theme[available_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[available_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[available_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Mem/Disk used meter
+theme[used_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[used_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[used_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Download graph colors
+theme[download_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[download_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[download_end]="{{ .theme.tokyo_night_moon.red }}"
+
+# Upload graph colors
+theme[upload_start]="{{ .theme.tokyo_night_moon.green }}"
+theme[upload_mid]="{{ .theme.tokyo_night_moon.yellow }}"
+theme[upload_end]="{{ .theme.tokyo_night_moon.red }}"

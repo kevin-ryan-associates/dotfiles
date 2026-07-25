@@ -1,0 +1,23 @@
+{{- /*
+=============================================================================
+git/config.tmpl → ~/.config/git/config
+
+Git delta diff colors, rendered from .chezmoidata.yaml's
+`theme.tokyo_night_moon` palette. The delta_* entries are blended diff
+background shades (darker than the accent reds/greens) specific to
+delta's line styling — kept in the palette so the whole stack reads from
+one source of truth.
+=============================================================================
+*/ -}}
+[delta]
+  minus-style                   = syntax "{{ .theme.tokyo_night_moon.delta_minus }}"
+  minus-non-emph-style          = syntax "{{ .theme.tokyo_night_moon.delta_minus }}"
+  minus-emph-style              = syntax "{{ .theme.tokyo_night_moon.delta_minus_emph }}"
+  minus-empty-line-marker-style = syntax "{{ .theme.tokyo_night_moon.delta_minus }}"
+  line-numbers-minus-style      = "{{ .theme.tokyo_night_moon.red1 }}"
+  plus-style                    = syntax "{{ .theme.tokyo_night_moon.delta_plus }}"
+  plus-non-emph-style           = syntax "{{ .theme.tokyo_night_moon.delta_plus }}"
+  plus-emph-style               = syntax "{{ .theme.tokyo_night_moon.delta_plus_emph }}"
+  plus-empty-line-marker-style  = syntax "{{ .theme.tokyo_night_moon.delta_plus }}"
+  line-numbers-plus-style       = "{{ .theme.tokyo_night_moon.teal }}"
+  line-numbers-zero-style       = "{{ .theme.tokyo_night_moon.fg_gutter }}"

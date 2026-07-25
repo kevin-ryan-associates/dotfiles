@@ -1,0 +1,90 @@
+{{- /*
+=============================================================================
+hunk/config.toml.tmpl → ~/.config/hunk/config.toml
+
+Tokyo Night Moon custom theme for hunk (review-first diff viewer). Inherits
+from hunk's bundled `tokyo-night` (Night variant) and overrides surface chrome
+plus syntax scopes to the Moon palette. Every hex below is rendered from
+.chezmoidata.yaml's `theme.tokyo_night_moon` so the whole stack reads one
+palette.
+=============================================================================
+*/ -}}
+# Tokyo Night Moon custom theme. hunk ships 65 bundled Shiki themes
+# including `tokyo-night` (the Night variant, {{ .theme.tokyo_night_moon.page_bg }} bg). There is no
+# bundled Tokyo Night *Moon* — this inherits from `tokyo-night` and overrides
+# the surface chrome plus syntax scopes to match the folke/tokyonight.nvim
+# Moon palette (bg {{ .theme.tokyo_night_moon.bg }}, fg {{ .theme.tokyo_night_moon.fg }}) used by every other tool in this repo.
+# Schema: github.com/modem-dev/hunk `src/core/config.ts` + `src/ui/themes.ts`.
+theme = "custom"
+
+[custom_theme]
+base = "tokyo-night"
+label = "Tokyo Night Moon"
+
+# Surface chrome (overrides Night-derived {{ .theme.tokyo_night_moon.page_bg }} surface)
+background = "{{ .theme.tokyo_night_moon.bg }}"
+panel = "{{ .theme.tokyo_night_moon.bg_dark }}"
+panelAlt = "{{ .theme.tokyo_night_moon.fg_gutter }}"
+border = "{{ .theme.tokyo_night_moon.fg_gutter }}"
+text = "{{ .theme.tokyo_night_moon.fg }}"
+muted = "{{ .theme.tokyo_night_moon.comment }}"
+
+# Diff sign colors (Moon gitSigns palette — brighter than Night's green/red)
+addedSignColor = "{{ .theme.tokyo_night_moon.green }}"
+removedSignColor = "{{ .theme.tokyo_night_moon.red }}"
+
+# Accent / selection — Moon blue
+accent = "{{ .theme.tokyo_night_moon.blue }}"
+accentMuted = "{{ .theme.tokyo_night_moon.blue0 }}"
+selectedHunk = "{{ .theme.tokyo_night_moon.blue }}"
+
+# Context surfaces
+contextBg = "{{ .theme.tokyo_night_moon.bg }}"
+contextContentBg = "{{ .theme.tokyo_night_moon.bg }}"
+lineNumberBg = "{{ .theme.tokyo_night_moon.bg }}"
+lineNumberFg = "{{ .theme.tokyo_night_moon.dark5 }}"
+
+# Sidebar file-status badges (Moon git palette)
+badgeAdded = "{{ .theme.tokyo_night_moon.green }}"
+badgeRemoved = "{{ .theme.tokyo_night_moon.red }}"
+badgeNeutral = "{{ .theme.tokyo_night_moon.comment }}"
+fileNew = "{{ .theme.tokyo_night_moon.green }}"
+fileDeleted = "{{ .theme.tokyo_night_moon.red }}"
+fileRenamed = "{{ .theme.tokyo_night_moon.yellow }}"
+fileModified = "{{ .theme.tokyo_night_moon.blue }}"
+fileUntracked = "{{ .theme.tokyo_night_moon.magenta }}"
+
+# Inline agent notes — magenta border for visibility against diff
+noteBorder = "{{ .theme.tokyo_night_moon.magenta }}"
+noteBackground = "{{ .theme.tokyo_night_moon.bg_dark }}"
+noteTitleBackground = "{{ .theme.tokyo_night_moon.bg_dark }}"
+noteTitleText = "{{ .theme.tokyo_night_moon.fg }}"
+
+[custom_theme.syntax_scopes]
+"comment" = "{{ .theme.tokyo_night_moon.comment }}"
+"punctuation.definition.comment" = "{{ .theme.tokyo_night_moon.comment }}"
+"punctuation.special" = "{{ .theme.tokyo_night_moon.comment }}"
+"keyword" = "{{ .theme.tokyo_night_moon.magenta }}"
+"keyword.control" = "{{ .theme.tokyo_night_moon.magenta }}"
+"keyword.operator" = "{{ .theme.tokyo_night_moon.cyan }}"
+"storage" = "{{ .theme.tokyo_night_moon.magenta }}"
+"storage.type" = "{{ .theme.tokyo_night_moon.yellow }}"
+"entity.name.function" = "{{ .theme.tokyo_night_moon.blue }}"
+"support.function" = "{{ .theme.tokyo_night_moon.blue }}"
+"entity.name.class" = "{{ .theme.tokyo_night_moon.yellow }}"
+"entity.name.type" = "{{ .theme.tokyo_night_moon.yellow }}"
+"support.type" = "{{ .theme.tokyo_night_moon.yellow }}"
+"variable" = "{{ .theme.tokyo_night_moon.fg }}"
+"variable.language" = "{{ .theme.tokyo_night_moon.cyan }}"
+"variable.parameter" = "{{ .theme.tokyo_night_moon.fg }}"
+"constant" = "{{ .theme.tokyo_night_moon.orange }}"
+"constant.numeric" = "{{ .theme.tokyo_night_moon.orange }}"
+"constant.language" = "{{ .theme.tokyo_night_moon.orange }}"
+"string" = "{{ .theme.tokyo_night_moon.green }}"
+"punctuation" = "{{ .theme.tokyo_night_moon.fg_dark }}"
+"entity.name.tag" = "{{ .theme.tokyo_night_moon.orange }}"
+"entity.other.attribute-name" = "{{ .theme.tokyo_night_moon.magenta }}"
+"markup.heading" = "{{ .theme.tokyo_night_moon.orange }}"
+"markup.inserted" = "{{ .theme.tokyo_night_moon.green }}"
+"markup.deleted" = "{{ .theme.tokyo_night_moon.red }}"
+"markup.changed" = "{{ .theme.tokyo_night_moon.blue }}"

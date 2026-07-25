@@ -1,3 +1,13 @@
+{{- /*
+=============================================================================
+dot_zshrc.tmpl → ~/.zshrc
+
+Zsh config. The FZF_DEFAULT_OPTS color block renders Tokyo Night Moon
+colors from .chezmoidata.yaml's `theme.tokyo_night_moon` palette; the rest
+of the file is plain zsh that Go templates pass through untouched (only
+`{{ }}` is special to the template engine, and zsh uses none of those).
+=============================================================================
+*/ -}}
 # ============================================================================
 # ainative .zshrc -- a snappy, demo-friendly zsh
 # ============================================================================
@@ -75,22 +85,22 @@ export FZF_DEFAULT_OPTS="
   --ansi
   --layout=reverse
   --border=none
-  --color=bg+:#2f334d
-  --color=bg:#222436
-  --color=border:#0db9d7
-  --color=fg:#c8d3f5
-  --color=gutter:#222436
-  --color=header:#ff966c
-  --color=hl+:#86e1fc
-  --color=hl:#86e1fc
-  --color=info:#636da6
-  --color=marker:#c099ff
-  --color=pointer:#c099ff
-  --color=prompt:#86e1fc
-  --color=query:#c8d3f5:regular
-  --color=scrollbar:#0db9d7
-  --color=separator:#ff966c
-  --color=spinner:#c099ff
+  --color=bg+:{{ .theme.tokyo_night_moon.bg_highlight }}
+  --color=bg:{{ .theme.tokyo_night_moon.bg }}
+  --color=border:{{ .theme.tokyo_night_moon.border_teal }}
+  --color=fg:{{ .theme.tokyo_night_moon.fg }}
+  --color=gutter:{{ .theme.tokyo_night_moon.bg }}
+  --color=header:{{ .theme.tokyo_night_moon.orange }}
+  --color=hl+:{{ .theme.tokyo_night_moon.cyan }}
+  --color=hl:{{ .theme.tokyo_night_moon.cyan }}
+  --color=info:{{ .theme.tokyo_night_moon.comment }}
+  --color=marker:{{ .theme.tokyo_night_moon.magenta }}
+  --color=pointer:{{ .theme.tokyo_night_moon.magenta }}
+  --color=prompt:{{ .theme.tokyo_night_moon.cyan }}
+  --color=query:{{ .theme.tokyo_night_moon.fg }}:regular
+  --color=scrollbar:{{ .theme.tokyo_night_moon.border_teal }}
+  --color=separator:{{ .theme.tokyo_night_moon.orange }}
+  --color=spinner:{{ .theme.tokyo_night_moon.magenta }}
 "
 
 # ---- zoxide ---------------------------------------------------------------

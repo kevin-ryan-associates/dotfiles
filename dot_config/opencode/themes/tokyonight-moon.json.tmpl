@@ -1,0 +1,87 @@
+{{- /*
+=============================================================================
+tokyonight-moon.json.tmpl → ~/.config/opencode/themes/tokyonight-moon.json
+
+OpenCode theme. The `defs` block holds the literal Moon palette as hex; the
+`theme` block references those def names. Only hex literals are templated
+from .chezmoidata.yaml. Note `red` here is the Night-variant
+{{ .theme.tokyo_night_moon.red_alt }} (preserved for fidelity as `red_alt` in
+the palette) — OpenCode's existing choice, not normalized by centralization.
+Rendered output is valid JSON — verify with `jq empty`.
+=============================================================================
+*/ -}}
+{
+  "$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "bg": "{{ .theme.tokyo_night_moon.bg }}",
+    "bg_panel": "{{ .theme.tokyo_night_moon.bg_alt }}",
+    "bg_element": "{{ .theme.tokyo_night_moon.bg_highlight }}",
+    "border": "{{ .theme.tokyo_night_moon.bg_dark }}",
+    "border_active": "{{ .theme.tokyo_night_moon.terminal_black }}",
+    "border_subtle": "{{ .theme.tokyo_night_moon.fg_gutter }}",
+    "text": "{{ .theme.tokyo_night_moon.fg }}",
+    "text_muted": "{{ .theme.tokyo_night_moon.comment }}",
+    "cyan": "{{ .theme.tokyo_night_moon.cyan }}",
+    "cyan_alt": "{{ .theme.tokyo_night_moon.cyan1 }}",
+    "blue": "{{ .theme.tokyo_night_moon.blue }}",
+    "magenta": "{{ .theme.tokyo_night_moon.magenta }}",
+    "green": "{{ .theme.tokyo_night_moon.green }}",
+    "orange": "{{ .theme.tokyo_night_moon.orange }}",
+    "amber": "{{ .theme.tokyo_night_moon.yellow }}",
+    "red": "{{ .theme.tokyo_night_moon.red_alt }}",
+    "teal": "{{ .theme.tokyo_night_moon.teal }}",
+    "change": "{{ .theme.tokyo_night_moon.change_gray }}"
+  },
+  "theme": {
+    "primary": "cyan",
+    "secondary": "blue",
+    "accent": "magenta",
+    "error": "red",
+    "warning": "orange",
+    "success": "green",
+    "info": "cyan_alt",
+    "text": "text",
+    "textMuted": "text_muted",
+    "background": "bg",
+    "backgroundPanel": "bg_panel",
+    "backgroundElement": "bg_element",
+    "border": "border",
+    "borderActive": "border_active",
+    "borderSubtle": "border_subtle",
+    "diffAdded": "green",
+    "diffRemoved": "red",
+    "diffContext": "change",
+    "diffHunkHeader": "text_muted",
+    "diffHighlightAdded": "green",
+    "diffHighlightRemoved": "red",
+    "diffAddedBg": "bg_panel",
+    "diffRemovedBg": "bg_panel",
+    "diffContextBg": "bg_panel",
+    "diffLineNumber": "text_muted",
+    "diffAddedLineNumberBg": "bg_panel",
+    "diffRemovedLineNumberBg": "bg_panel",
+    "markdownText": "text",
+    "markdownHeading": "blue",
+    "markdownLink": "magenta",
+    "markdownLinkText": "magenta",
+    "markdownCode": "green",
+    "markdownBlockQuote": "text_muted",
+    "markdownEmph": "orange",
+    "markdownStrong": "amber",
+    "markdownHorizontalRule": "border_active",
+    "markdownListItem": "cyan_alt",
+    "markdownListEnumeration": "cyan",
+    "markdownImage": "blue",
+    "markdownImageText": "cyan",
+    "markdownCodeBlock": "text",
+    "syntaxComment": "text_muted",
+    "syntaxKeyword": "magenta",
+    "syntaxFunction": "blue",
+    "syntaxVariable": "text",
+    "syntaxString": "green",
+    "syntaxNumber": "orange",
+    "syntaxType": "teal",
+    "syntaxOperator": "cyan_alt",
+    "syntaxPunctuation": "text"
+  }
+}

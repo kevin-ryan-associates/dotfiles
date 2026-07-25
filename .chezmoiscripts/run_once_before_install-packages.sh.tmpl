@@ -70,21 +70,19 @@ brew install {{ range .packages.brew.k8s }}{{ . }} {{ end }}
 echo "==> Installing build tools..."
 brew install {{ range .packages.brew.build }}{{ . }} {{ end }}
 
-echo "==> Installing 1Password CLI..."
-brew install --cask 1password-cli || true
-
 echo "==> Installing Colima (Docker runtime without GUI)..."
 brew install {{ range .macos.brew.docker_runtime }}{{ . }} {{ end }}
 
 echo "==> Installing Neovim and dependencies..."
 brew install {{ range .packages.brew.dev }}{{ . }} {{ end }}
 
-echo "==> Installing terminal emulator..."
-brew install --cask ghostty || true
-brew install --cask font-meslo-lg-nerd-font
+echo "==> Installing casks (1Password CLI, terminal emulator, fonts)..."
+{{- range .macos.brew.casks }}
+brew install --cask {{ . }} || echo "  cask {{ . }} failed (already installed outside brew?); continuing"
+{{- end }}
 
 echo "==> Installing OpenCode..."
-curl -fsSL https://raw.githubusercontent.com/anomalyco/opencode/master/install -o /tmp/opencode-install.sh
+curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/master/install -o /tmp/opencode-install.sh
 bash /tmp/opencode-install.sh --no-modify-path
 rm -f /tmp/opencode-install.sh
 

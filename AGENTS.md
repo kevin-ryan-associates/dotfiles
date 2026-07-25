@@ -194,12 +194,18 @@ False success claims are the worst AGENTS.md violation. Ambient silence about a 
 ## Pointers
 
 - **README.md** — full project context, chezmoi source layout, theme policy, fresh-machine setup. Read it for the big picture; AGENTS.md is for *how to make changes safely*.
-- **.chezmoidata.yaml** — static package inventory. Single source of truth consumed by `run_once_before_install-packages.sh.tmpl`. Add brew formulae / casks / npm globals here. (The `linux:` apt section is retired; reintroduce it with the Linux install arm.)
+- **.chezmoidata.yaml** — static package inventory **and** the canonical Tokyo Night Moon palette (`theme.tokyo_night_moon`). Single source of truth consumed by `run_once_before_install-packages.sh.tmpl` (package lists) and by the `*.tmpl` tool configs (palette refs). Add brew formulae / casks / npm globals here; edit a terminal color here and it propagates to every templated config on `chezmoi apply`. (The `linux:` apt section is retired; reintroduce it with the Linux install arm.)
 - **.chezmoi.toml.tmpl** — init config template. Fails early if git missing.
 - **.chezmoiignore** — non-config source-root entries that must never deploy to `$HOME`.
 - **.chezmoiscripts/run_once_before_install-packages.sh.tmpl** — the install logic. macOS-only via `{{ if eq .chezmoi.os "darwin" }}`; the `{{ else }}` arm fails fast. Replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet. (Linux arm retired — re-add the `{{ else if eq .chezmoi.os "linux" }}` branch to bring it back.)
 - **.chezmoiscripts/run_onchange_before_configure-docker-cli-plugins.sh.tmpl** — jq merge on `~/.docker/config.json` (macOS only).
+- **.chezmoiscripts/run_onchange_before_configure-pi-theme.sh.tmpl** — jq merge setting `theme` in `~/.pi/agent/settings.json` (macOS only).
+- **.chezmoiscripts/run_onchange_before_configure-pi-packages.sh.tmpl** — append-only jq merge populating the `packages` array in `~/.pi/agent/settings.json` from `.chezmoidata.yaml`'s `pi.packages` (macOS only).
+- **.chezmoiscripts/run_onchange_before_configure-claude-theme.sh.tmpl** — jq merge setting `theme` in `~/.claude/settings.json` (macOS only).
 - **.chezmoiscripts/run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl** — self-heal for stale Docker Desktop symlinks (macOS only).
+- **.chezmoiscripts/run_once_after_cleanup-claude-npm-global.sh.tmpl** — self-heal removing the deprecated npm-global `@anthropic-ai/claude-code` install (macOS only).
 - **dot_zprofile.tmpl** — `~/.zprofile` (brew shellenv line, resolved via `stat` on candidate brew paths: `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`).
-- **dot_config/**, **dot_zshrc**, **dot_zshenv** — config packages, chezmoi-named.
+- **dot_config/**, **dot_zshrc**, **dot_zshenv** — config packages, chezmoi-named. Several entries under `dot_config/` are `*.tmpl` sources that render Tokyo Night Moon colors from `.chezmoidata.yaml`'s `theme.tokyo_night_moon` palette (starship, git/delta, lazygit, hunk, btop theme, ghostty; `dot_zshrc.tmpl` renders the fzf color block).
+- **dot_pi/agent/themes/tokyo-night-moon.json.tmpl** — pi theme JSON (templated palette; deployed as a plain file target, selected via the `configure-pi-theme` run-script).
+- **dot_claude/themes/tokyo-night-moon.json.tmpl** — Claude Code theme JSON (templated palette; selected via the `configure-claude-theme` run-script).
 - **`test/`** — *retired.* Was a Docker-based test harness for the Ubuntu apply path; removed when the Linux install path was retired. Re-add it alongside the Linux install arm.

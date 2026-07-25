@@ -1,23 +1,34 @@
+{{- /*
+=============================================================================
+tokyo-night-moon.json.tmpl → ~/.pi/agent/themes/tokyo-night-moon.json
+
+Pi theme. The `vars` block holds the literal Moon palette as hex; the
+`colors` block references those names (e.g. "border": "bgHighlight"). Only
+the hex literals are templated from .chezmoidata.yaml so the palette is
+single-sourced; the name references stay literal strings Pi resolves
+internally. Rendered output is valid JSON — verify with `jq empty`.
+=============================================================================
+*/ -}}
 {
   "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
   "name": "tokyo-night-moon",
   "vars": {
-    "bg": "#222436",
-    "bgDark": "#1f2335",
-    "bgHighlight": "#3b4261",
-    "fg": "#c8d3f5",
-    "fgGutter": "#737aa2",
-    "comment": "#636da6",
-    "blue": "#82aaff",
-    "cyan": "#86e1fc",
-    "green": "#c3e88d",
-    "magenta": "#c099ff",
-    "orange": "#ff966c",
-    "red": "#ff757f",
-    "yellow": "#ffc777",
-    "selection": "#2d3f76",
-    "tintGreen": "#1b2a3b",
-    "tintRed": "#2d1f23"
+    "bg": "{{ .theme.tokyo_night_moon.bg }}",
+    "bgDark": "{{ .theme.tokyo_night_moon.bg_dark }}",
+    "bgHighlight": "{{ .theme.tokyo_night_moon.fg_gutter }}",
+    "fg": "{{ .theme.tokyo_night_moon.fg }}",
+    "fgGutter": "{{ .theme.tokyo_night_moon.dark5 }}",
+    "comment": "{{ .theme.tokyo_night_moon.comment }}",
+    "blue": "{{ .theme.tokyo_night_moon.blue }}",
+    "cyan": "{{ .theme.tokyo_night_moon.cyan }}",
+    "green": "{{ .theme.tokyo_night_moon.green }}",
+    "magenta": "{{ .theme.tokyo_night_moon.magenta }}",
+    "orange": "{{ .theme.tokyo_night_moon.orange }}",
+    "red": "{{ .theme.tokyo_night_moon.red }}",
+    "yellow": "{{ .theme.tokyo_night_moon.yellow }}",
+    "selection": "{{ .theme.tokyo_night_moon.selection }}",
+    "tintGreen": "{{ .theme.tokyo_night_moon.tint_green }}",
+    "tintRed": "{{ .theme.tokyo_night_moon.tint_red }}"
   },
   "colors": {
     "accent": "blue",
@@ -67,11 +78,11 @@
     "syntaxNumber": "orange",
     "syntaxType": "yellow",
     "syntaxOperator": "cyan",
-    "syntaxPunctuation": "#a9b1d6",
+    "syntaxPunctuation": "{{ .theme.tokyo_night_moon.fg_dark }}",
 
     "thinkingOff": "bgHighlight",
     "thinkingMinimal": "comment",
-    "thinkingLow": "#7aa2f7",
+    "thinkingLow": "{{ .theme.tokyo_night_moon.blue1 }}",
     "thinkingMedium": "blue",
     "thinkingHigh": "magenta",
     "thinkingXhigh": "red",
@@ -80,7 +91,7 @@
     "bashMode": "cyan"
   },
   "export": {
-    "pageBg": "#1a1b26",
+    "pageBg": "{{ .theme.tokyo_night_moon.page_bg }}",
     "cardBg": "bgDark",
     "infoBg": "bgHighlight"
   }

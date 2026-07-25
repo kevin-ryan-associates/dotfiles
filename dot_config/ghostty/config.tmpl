@@ -1,0 +1,19 @@
+{{- /*
+=============================================================================
+ghostty/config.tmpl → ~/.config/ghostty/config
+
+Ghostty terminal config. Uses the built-in TokyoNight Moon theme; the
+background is pinned here (rendered from .chezmoidata.yaml's palette) so it
+survives upstream theme revisions bundled with the Ghostty app.
+=============================================================================
+*/ -}}
+# Nerd Font for icons
+font-family = MesloLGS Nerd Font Mono
+font-size = 14
+
+# Tokyo Night theme (built-in)
+theme = TokyoNight Moon
+# Pin the theme's background explicitly so it's not solely a function of the
+# bundled theme file that ships with the Ghostty app — survives upstream theme
+# revisions. Value matches the bundled TokyoNight Moon `background`.
+background = {{ .theme.tokyo_night_moon.bg }}

@@ -1,0 +1,62 @@
+{{- /*
+=============================================================================
+tokyo-night-moon.json.tmpl → ~/.claude/themes/tokyo-night-moon.json
+
+Claude Code custom theme: ~40 overrides on the `dark` base. Every hex
+literal is rendered from .chezmoidata.yaml's `theme.tokyo_night_moon`
+palette. Rendered output is valid JSON — verify with `jq empty`.
+=============================================================================
+*/ -}}
+{
+  "$schema": "https://json.schemastore.org/claude-code-theme.json",
+  "name": "Tokyo Night Moon",
+  "base": "dark",
+  "overrides": {
+    "claude": "{{ .theme.tokyo_night_moon.blue }}",
+    "claudeShimmer": "{{ .theme.tokyo_night_moon.blue0 }}",
+    "text": "",
+    "inverseText": "{{ .theme.tokyo_night_moon.bg }}",
+    "secondaryText": "{{ .theme.tokyo_night_moon.dark5 }}",
+    "subtle": "{{ .theme.tokyo_night_moon.comment }}",
+    "suggestion": "{{ .theme.tokyo_night_moon.blue }}",
+    "permission": "{{ .theme.tokyo_night_moon.blue }}",
+    "remember": "{{ .theme.tokyo_night_moon.cyan }}",
+    "planMode": "{{ .theme.tokyo_night_moon.blue1 }}",
+
+    "diffAdded": "{{ .theme.tokyo_night_moon.tint_green }}",
+    "diffRemoved": "{{ .theme.tokyo_night_moon.tint_red }}",
+    "diffAddedText": "{{ .theme.tokyo_night_moon.green }}",
+    "diffRemovedText": "{{ .theme.tokyo_night_moon.red }}",
+    "diffContext": "{{ .theme.tokyo_night_moon.comment }}",
+
+    "userMessageBackground": "{{ .theme.tokyo_night_moon.bg_dark }}",
+    "userMessageText": "",
+    "claudeMessageBackground": "{{ .theme.tokyo_night_moon.bg_dark }}",
+    "claudeMessageText": "",
+    "toolMessageBackground": "{{ .theme.tokyo_night_moon.bg_dark }}",
+    "toolMessageText": "{{ .theme.tokyo_night_moon.dark5 }}",
+
+    "syntaxComment": "{{ .theme.tokyo_night_moon.comment }}",
+    "syntaxKeyword": "{{ .theme.tokyo_night_moon.magenta }}",
+    "syntaxFunction": "{{ .theme.tokyo_night_moon.blue }}",
+    "syntaxVariable": "{{ .theme.tokyo_night_moon.fg }}",
+    "syntaxString": "{{ .theme.tokyo_night_moon.green }}",
+    "syntaxNumber": "{{ .theme.tokyo_night_moon.orange }}",
+    "syntaxType": "{{ .theme.tokyo_night_moon.yellow }}",
+    "syntaxOperator": "{{ .theme.tokyo_night_moon.cyan }}",
+    "syntaxPunctuation": "{{ .theme.tokyo_night_moon.fg_dark }}",
+
+    "thinkingOff": "{{ .theme.tokyo_night_moon.fg_gutter }}",
+    "thinkingMinimal": "{{ .theme.tokyo_night_moon.comment }}",
+    "thinkingLow": "{{ .theme.tokyo_night_moon.blue1 }}",
+    "thinkingMedium": "{{ .theme.tokyo_night_moon.blue }}",
+    "thinkingHigh": "{{ .theme.tokyo_night_moon.magenta }}",
+    "thinkingXhigh": "{{ .theme.tokyo_night_moon.red }}",
+
+    "bashMode": "{{ .theme.tokyo_night_moon.cyan }}",
+    "success": "{{ .theme.tokyo_night_moon.green }}",
+    "error": "{{ .theme.tokyo_night_moon.red }}",
+    "warning": "{{ .theme.tokyo_night_moon.yellow }}",
+    "celebration": "{{ .theme.tokyo_night_moon.orange }}"
+  }
+}

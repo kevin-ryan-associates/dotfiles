@@ -2,8 +2,11 @@
 # Package inventory — single source of truth for the run_once_before_install
 # install script. Consumed via `{{ .packages.* }}` in templates.
 #
-# Per AGENTS.md docs-sync rule: if you change a brew/apt/npm package here, also
-# update the README "Manual alternative" install lines in the same commit.
+# Per AGENTS.md docs-sync rule: if you change a brew/cask/npm package here, also
+# update the README "What `.chezmoidata.yaml` installs" block in the same commit.
+# The `theme.tokyo_night_moon` palette below is also part of the source of
+# truth — it is consumed (read-only) by the `*.tmpl` tool configs at apply
+# time, never by an install run-script.
 # =============================================================================
 
 packages:
@@ -83,3 +86,58 @@ macos:
       - 1password-cli
       - ghostty
       - font-meslo-lg-nerd-font
+
+# =============================================================================
+# Tokyo Night Moon palette — single source of truth for every tool config that
+# hardcodes terminal colors. Consumed via `{{ .theme.tokyo_night_moon.<key> }}`
+# by the `*.tmpl` config sources (starship, git/delta, lazygit, hunk, btop,
+# ghostty, zshrc fzf, pi/claude/opencode theme JSON). Editing a value here
+# propagates to every templated config on the next `chezmoi apply`.
+#
+# Values match folke/tokyonight.nvim `moon` variant exactly. A few entries are
+# tool-specific shades kept for byte-identical render fidelity (documented
+# inline) rather than the canonical accent — centralizing does NOT mean
+# normalizing divergent tool choices; it means moving them to one place.
+# Out of scope this pass: dot_config/bat/themes/tokyonight_moon.tmTheme (a
+# vendored TextMate grammar with hundreds of scope->hex entries) stays literal.
+# =============================================================================
+theme:
+  tokyo_night_moon:
+    # --- surfaces (Moon) ---
+    bg:               "#222436"   # main background
+    bg_dark:          "#1f2335"   # darker surface / panels
+    bg_alt:           "#1e2030"   # starship color_panel, opencode bg_panel
+    bg_highlight:     "#2f334d"   # current-line / selection bg / fzf bg+
+    terminal_black:   "#444a73"   # opencode border_active
+    page_bg:          "#1a1b26"   # pi export page bg (Night variant bg, kept for fidelity)
+    # --- foregrounds ---
+    fg:               "#c8d3f5"   # main foreground
+    fg_dark:          "#a9b1d6"   # punctuation, dimmed text
+    fg_gutter:        "#3b4261"   # gutter / line numbers / panel chrome
+    dark5:            "#737aa2"   # secondary text (tokyonight `dark5`)
+    comment:          "#636da6"   # comments, muted text
+    # --- accents (Moon) ---
+    blue:             "#82aaff"
+    blue0:            "#3d59a1"   # muted blue (hunk accentMuted, claude claudeShimmer)
+    blue1:            "#7aa2f7"   # thinking-low / plan-mode
+    cyan:             "#86e1fc"
+    cyan1:            "#7dcfff"   # opencode cyan_alt
+    green:            "#c3e88d"
+    magenta:          "#c099ff"
+    orange:           "#ff966c"
+    yellow:           "#ffc777"
+    red:              "#ff757f"
+    red_alt:          "#f7768e"   # opencode red — Night variant, kept for byte-fidelity
+    red1:             "#c53b53"   # delta minus line-numbers, lazygit unstaged
+    teal:             "#4fd6be"   # delta plus line-numbers, opencode teal
+    border_teal:      "#0db9d7"   # fzf border/scrollbar, lazygit inactive border
+    change_gray:      "#828bb8"   # opencode diffContext "change"
+    # --- diff tints (pi/claude semantic bg tints) ---
+    tint_green:       "#1b2a3b"   # pi tintGreen, claude diffAdded
+    tint_red:         "#2d1f23"   # pi tintRed, claude diffRemoved
+    selection:        "#2d3f76"   # pi selection
+    # --- git delta diff line styles (blended diff backgrounds) ---
+    delta_minus:      "#4b2a3d"   # delta minus-style / minus-empty-line-marker
+    delta_minus_emph: "#713137"   # delta minus-emph-style
+    delta_plus:       "#2a4556"   # delta plus-style / plus-empty-line-marker
+    delta_plus_emph:  "#2c5a66"   # delta plus-emph-style

@@ -1,5 +1,3 @@
-if true then return {} end -- WARN: REMOVE THIS LINE TO ACTIVATE THIS FILE
-
 -- AstroCore provides a central place to modify mappings, vim options, autocommands, and more!
 -- Configuration documentation can be found with `:h astrocore`
 -- NOTE: We highly recommend setting up the Lua Language Server (`:LspInstall lua_ls`)
@@ -45,11 +43,41 @@ return {
         spell = false, -- sets vim.opt.spell
         signcolumn = "yes", -- sets vim.opt.signcolumn to yes
         wrap = false, -- sets vim.opt.wrap
+        autoread = true, -- sets vim.opt.autoread: reload files changed outside of nvim
+        updatetime = 250, -- sets vim.opt.updatetime: CursorHold fires promptly
       },
       g = { -- vim.g.<key>
         -- configure global vim variables (vim.g)
         -- NOTE: `mapleader` and `maplocalleader` must be set in the AstroNvim opts or before `lazy.setup`
         -- This can be found in the `lua/lazy_setup.lua` file
+      },
+    },
+    -- Configure auto commands here (see `:h nvim_create_autocmd`)
+    autocmds = {
+      checktime_reload = {
+        {
+          event = { "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" },
+          desc = "Check for external file changes and reload",
+          callback = function() if vim.api.nvim_get_mode().mode ~= "c" then vim.cmd "checktime" end end,
+        },
+      },
+      shortmess_swap_attention = {
+        {
+          event = { "BufReadPre", "VimEnter" },
+          desc = "Append 'A' to shortmess to suppress swap-file ATTENTION prompt",
+          callback = function()
+            if not vim.o.shortmess:find("A", 1, true) then vim.opt.shortmess:append "A" end
+          end,
+        },
+      },
+      notify_external_reload = {
+        {
+          event = { "FileChangedShellPost" },
+          desc = "Notify that buffer was reloaded from disk",
+          callback = function(args)
+            require("astrocore").notify(("Buffer reloaded from disk: %s"):format(args.match), vim.log.levels.WARN)
+          end,
+        },
       },
     },
     -- Mappings can be configured through AstroCore as well.

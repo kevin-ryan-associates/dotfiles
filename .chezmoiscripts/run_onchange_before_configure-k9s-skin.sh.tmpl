@@ -2,18 +2,27 @@
 =============================================================================
 configure-k9s-skin — idempotent ~/Library/Application Support/k9s/config.yaml patcher
 
-Sets the `skin:` key in k9s's config.yaml to `tokyo-night-moon` (the basename
-of the skin file deployed by
-dot_Library/Application Support/k9s/skins/tokyo-night-moon.yml.tmpl, which
-chezmoi renders to ~/Library/Application Support/k9s/skins/tokyo-night-moon.yml
-— k9s's native macOS default config location).
+Sets the `k9s.ui.skin` key in k9s's config.yaml to `tokyo-night-moon` (the
+basename of the skin file deployed by
+Library/Application Support/k9s/skins/tokyo-night-moon.yml.tmpl, which chezmoi
+renders to ~/Library/Application Support/k9s/skins/tokyo-night-moon.yml —
+k9s's native macOS default config location).
+
+k9s 0.51+ schema note: skin selection lives at `k9s.ui.skin` (nested under the
+required `k9s` object), NOT at a top-level `skin:` key. The older top-level
+`skin:` form (from the axkirillov/k9s-tokyonight convention) is rejected by
+k9s 0.51 with `Additional property skin is not allowed`, which makes k9s
+fall back to the default skin. This script writes the schema-valid path and
+removes any obsolete top-level `skin:` that an earlier (buggy) version of
+this script may have written.
 
 Why a script, not a pure `*.tmpl` file target: k9s writes runtime state
 (current context, bookmarks, cluster-specific configs under clusters/) into
 config.yaml and rewrites it during a session. A template target fully
 overwrites the destination, which would clobber that runtime state — the same
 hazard as ~/.docker/config.json. The yq merge preserves all existing fields
-and only sets `skin` (idempotent — fixed value, leaves every other key intact).
+and only sets `k9s.ui.skin` (idempotent — fixed value, leaves every other key
+intact) plus removes a stale top-level `skin` if present.
 
 The skin file itself is never rewritten by k9s at runtime, so it is owned as a
 pure template target (AGENTS.md Case A). Only config.yaml is patched here.
@@ -45,14 +54,18 @@ CONFIG_FILE="$K9S_DIR/config.yaml"
 echo "==> Configuring k9s skin ($SKIN_NAME) in $CONFIG_FILE..."
 mkdir -p "$K9S_DIR"
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo "{}" > "$CONFIG_FILE"
+  # k9s 0.51+ schema requires a top-level `k9s` object; seed with one so the
+  # first yq merge produces a schema-valid file.
+  echo "k9s: {}" > "$CONFIG_FILE"
 fi
 
 # Portable merge: yq (mikefarah/yq, the brew formula) writes to stdout, so
-# render to a tmp file and atomically replace. Sets `skin` to a fixed value,
-# preserving every other key (currentContext, bookmarks, etc.).
+# render to a tmp file and atomically replace. Sets `k9s.ui.skin` to a fixed
+# value and removes any obsolete top-level `skin` (written by older k9s or by
+# a buggy prior version of this script), preserving every other key
+# (currentContext, bookmarks, etc.).
 tmp=$(mktemp)
-yq ".skin = \"$SKIN_NAME\"" "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+yq 'del(.skin) | .k9s.ui.skin = "'"$SKIN_NAME"'"' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
 
 echo "    skin -> $SKIN_NAME"
 {{- else -}}

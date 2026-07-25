@@ -4,9 +4,11 @@ configure-k9s-skin — idempotent ~/Library/Application Support/k9s/config.yaml 
 
 Sets the `k9s.ui.skin` key in k9s's config.yaml to `tokyo-night-moon` (the
 basename of the skin file deployed by
-Library/Application Support/k9s/skins/tokyo-night-moon.yml.tmpl, which chezmoi
-renders to ~/Library/Application Support/k9s/skins/tokyo-night-moon.yml —
-k9s's native macOS default config location).
+Library/Application Support/k9s/skins/tokyo-night-moon.yaml.tmpl, which chezmoi
+renders to ~/Library/Application Support/k9s/skins/tokyo-night-moon.yaml —
+k9s's native macOS default config location). k9s's SkinFileFromName appends
+`.yaml` (not `.yml`), so the source filename must end `.yaml.tmpl` or k9s
+reports `No custom skin found. Using stock skin` and silently falls back.
 
 k9s 0.51+ schema note: skin selection lives at `k9s.ui.skin` (nested under the
 required `k9s` object), NOT at a top-level `skin:` key. The older top-level

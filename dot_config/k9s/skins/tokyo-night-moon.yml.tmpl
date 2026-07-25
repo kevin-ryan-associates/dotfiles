@@ -1,0 +1,139 @@
+{{- /*
+=============================================================================
+k9s/skins/tokyo-night-moon.yml.tmpl → ~/.config/k9s/skins/tokyo-night-moon.yml
+
+Tokyo Night Moon skin for k9s, colors rendered from .chezmoidata.yaml's
+`theme.tokyo_night_moon` palette. k9s loads the skin by basename
+(`tokyo-night-moon`), referenced via the `skin:` key in config.yaml which is
+set idempotently by run_onchange_before_configure-k9s-skin.sh.tmpl.
+
+The skin file itself is never rewritten by k9s at runtime, so it is safe to
+own as a pure template target (AGENTS.md Case A). Only `config.yaml` is
+runtime-mutated by k9s (current context, bookmarks) and is therefore patched
+by a run-script, not templated.
+
+Color roles follow the tokyonight.nvim `moon` variant; Moon collapses the
+Night-variant purple/pink accents into `magenta`, matching how the Moon
+palette renders.
+=============================================================================
+*/ -}}
+foreground: &foreground "{{ .theme.tokyo_night_moon.fg }}"
+background: &background "{{ .theme.tokyo_night_moon.bg }}"
+current_line: &current_line "{{ .theme.tokyo_night_moon.bg_highlight }}"
+selection: &selection "{{ .theme.tokyo_night_moon.selection }}"
+comment: &comment "{{ .theme.tokyo_night_moon.comment }}"
+cyan: &cyan "{{ .theme.tokyo_night_moon.cyan }}"
+green: &green "{{ .theme.tokyo_night_moon.green }}"
+yellow: &yellow "{{ .theme.tokyo_night_moon.yellow }}"
+orange: &orange "{{ .theme.tokyo_night_moon.orange }}"
+magenta: &magenta "{{ .theme.tokyo_night_moon.magenta }}"
+blue: &blue "{{ .theme.tokyo_night_moon.blue }}"
+red: &red "{{ .theme.tokyo_night_moon.red }}"
+purple: &purple "{{ .theme.tokyo_night_moon.magenta }}"
+pink: &pink "{{ .theme.tokyo_night_moon.magenta }}"
+white: &white "{{ .theme.tokyo_night_moon.fg_dark }}"
+black: &black "{{ .theme.tokyo_night_moon.bg_dark }}"
+
+k9s:
+  # General K9s styles
+  body:
+    fgColor: *foreground
+    bgColor: default
+    logoColor: *blue
+  # Command prompt styles
+  prompt:
+    fgColor: *foreground
+    bgColor: *background
+    suggestColor: *orange
+  # ClusterInfoView styles.
+  info:
+    fgColor: *magenta
+    sectionColor: *foreground
+  # Dialog styles.
+  dialog:
+    fgColor: *foreground
+    bgColor: default
+    buttonFgColor: *foreground
+    buttonBgColor: *magenta
+    buttonFocusFgColor: *background
+    buttonFocusBgColor: *foreground
+    labelFgColor: *comment
+    fieldFgColor: *foreground
+  frame:
+    # Borders styles.
+    border:
+      fgColor: *selection
+      focusColor: *foreground
+    menu:
+      fgColor: *foreground
+      keyColor: *magenta
+      # Used for favorite namespaces
+      numKeyColor: *magenta
+    # CrumbView attributes for history navigation.
+    crumbs:
+      fgColor: *white
+      bgColor: *cyan
+      activeColor: *yellow
+    # Resource status and update styles
+    status:
+      newColor: *magenta
+      modifyColor: *blue
+      addColor: *green
+      errorColor: *red
+      highlightcolor: *orange
+      killColor: *comment
+      completedColor: *comment
+    # Border title styles.
+    title:
+      fgColor: *foreground
+      bgColor: default
+      highlightColor: *blue
+      counterColor: *magenta
+      filterColor: *magenta
+  views:
+    # Charts skins...
+    charts:
+      bgColor: default
+      defaultDialColors:
+        - *blue
+        - *red
+      defaultChartColors:
+        - *blue
+        - *red
+    # TableView attributes.
+    table:
+      fgColor: *foreground
+      bgColor: default
+      cursorFgColor: *white
+      cursorBgColor: *background
+      markColor: darkgoldenrod
+      # Header row styles.
+      header:
+        fgColor: *foreground
+        bgColor: default
+        sorterColor: *cyan
+    # Xray view attributes.
+    xray:
+      fgColor: *foreground
+      bgColor: default
+      cursorColor: *current_line
+      graphicColor: *blue
+      showIcons: false
+    # YAML info styles.
+    yaml:
+      keyColor: *magenta
+      colonColor: *blue
+      valueColor: *foreground
+    # Logs styles.
+    logs:
+      fgColor: *foreground
+      bgColor: default
+      indicator:
+        fgColor: *foreground
+        bgColor: *selection
+    help:
+      fgColor: *foreground
+      bgColor: default
+      indicator:
+        fgColor: *red
+        bgColor: *selection

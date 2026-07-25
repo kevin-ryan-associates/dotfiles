@@ -1,0 +1,50 @@
+{{- /*
+=============================================================================
+configure-k9s-skin — idempotent ~/.config/k9s/config.yaml patcher
+
+Sets the `skin:` key in k9s's config.yaml to `tokyo-night-moon` (the basename
+of the skin file deployed by dot_config/k9s/skins/tokyo-night-moon.yml.tmpl).
+
+Why a script, not a pure `*.tmpl` file target: k9s writes runtime state
+(current context, bookmarks, cluster-specific configs under clusters/) into
+config.yaml and rewrites it during a session. A template target fully
+overwrites the destination, which would clobber that runtime state — the same
+hazard as ~/.docker/config.json. The yq merge preserves all existing fields
+and only sets `skin` (idempotent — fixed value, leaves every other key intact).
+
+`run_onchange_before_` semantics:
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash), so re-applies don't churn config.yaml's mtime once
+    the patch is stable.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.config/k9s/config.yaml is NOT
+    a chezmoi-managed file; this script is the only writer.
+  • macOS-only. K9S_CONFIG_DIR is exported by dot_zshenv so k9s reads from
+    ~/.config/k9s (the chezmoi-managed location) rather than the macOS default
+    ~/Library/Application Support/k9s.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+SKIN_NAME="tokyo-night-moon"
+K9S_DIR="${K9S_CONFIG_DIR:-$HOME/.config/k9s}"
+CONFIG_FILE="$K9S_DIR/config.yaml"
+
+echo "==> Configuring k9s skin ($SKIN_NAME) in $CONFIG_FILE..."
+mkdir -p "$K9S_DIR"
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "{}" > "$CONFIG_FILE"
+fi
+
+# Portable merge: yq (mikefarah/yq, the brew formula) writes to stdout, so
+# render to a tmp file and atomically replace. Sets `skin` to a fixed value,
+# preserving every other key (currentContext, bookmarks, etc.).
+tmp=$(mktemp)
+yq ".skin = \"$SKIN_NAME\"" "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+
+echo "    skin -> $SKIN_NAME"
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

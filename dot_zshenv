@@ -1,1 +1,7 @@
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+# Keep k9s config under the chezmoi-managed ~/.config tree instead of k9s's
+# macOS default (~/Library/Application Support/k9s). The skin is deployed by
+# dot_config/k9s/skins/tokyo-night-moon.yml.tmpl and selected in config.yaml by
+# run_onchange_before_configure-k9s-skin.sh.tmpl.
+export K9S_CONFIG_DIR="$HOME/.config/k9s"

@@ -42,10 +42,12 @@ packages:
     # Cloud platform CLIs
     cloud:
       - azure-cli  # Microsoft Azure CLI (provides the `az` binary); core brew formula
+    # Kubernetes tooling
     k8s:
       - kubectl
       - helm
       - k9s
+      - kubectx    # context switcher (also provides `kubens` for namespaces); core brew formula
     # Build tools
     build:
       - cmake

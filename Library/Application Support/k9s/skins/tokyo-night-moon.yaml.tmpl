@@ -37,7 +37,14 @@ black: &black "{{ .theme.tokyo_night_moon.bg_dark }}"
 k9s:
   # General K9s styles
   body:
-    fgColor: *foreground
+    # NOTE: body.fgColor is k9s's global default text color AND (via bug #3442)
+    # the selected-row background color (k9s uses the row text color as the
+    # selected row bg). The pod view's per-row colorer hardcodes Running pods
+    # to model1.StdColor == body.fgColor and bypasses table.fgColor, so this is
+    # the only lever to make the pod-list rows (and selected-row bg) orange.
+    # Side effect: all default text (menus, dialogs, logs, yaml, crumbs) is
+    # orange too. Revert to *foreground to go back to the default lavender.
+    fgColor: *orange
     bgColor: default
     logoColor: *blue
   # Command prompt styles

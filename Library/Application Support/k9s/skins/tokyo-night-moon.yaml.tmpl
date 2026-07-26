@@ -104,7 +104,10 @@ k9s:
     table:
       fgColor: *foreground
       bgColor: default
-      cursorFgColor: *foreground
+      # NOTE: k9s 0.51 bug #3442 ignores cursorBgColor for the selected row's
+      # background (renders a built-in magenta instead). Set cursorFgColor to a
+      # dark color for readable contrast against that unavoidable magenta bg.
+      cursorFgColor: *black
       cursorBgColor: *current_line
       markColor: darkgoldenrod
       # Header row styles.

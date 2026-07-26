@@ -101,6 +101,9 @@ return {
           desc = "Close buffer from tabline",
         },
 
+        -- yank the whole buffer to the system clipboard
+        ["<Leader>ya"] = { ":%y+<CR>", desc = "Yank all buffer to clipboard" },
+
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
         -- ["<Leader>b"] = { desc = "Buffers" },

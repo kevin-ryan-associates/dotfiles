@@ -37,14 +37,7 @@ black: &black "{{ .theme.tokyo_night_moon.bg_dark }}"
 k9s:
   # General K9s styles
   body:
-    # NOTE: body.fgColor is k9s's global default text color AND (via bug #3442)
-    # the selected-row background color (k9s uses the row text color as the
-    # selected row bg). The pod view's per-row colorer hardcodes Running pods
-    # to model1.StdColor == body.fgColor and bypasses table.fgColor, so this is
-    # the only lever to make the pod-list rows (and selected-row bg) orange.
-    # Side effect: all default text (menus, dialogs, logs, yaml, crumbs) is
-    # orange too. Revert to *foreground to go back to the default lavender.
-    fgColor: *orange
+    fgColor: *foreground
     bgColor: default
     logoColor: *blue
   # Command prompt styles
@@ -83,7 +76,14 @@ k9s:
       activeColor: *yellow
     # Resource status and update styles
     status:
-      newColor: *magenta
+      # NOTE: newColor is the ACTUAL lever for pod-list rows: k9s's
+      # updateStyles() assigns model1.StdColor = frame.status.newColor, and
+      # the pod ColorerFunc returns StdColor for Running pods. Via bug #3442
+      # (unfixed in 0.51.0) the selected-row bg = the row's text color, so
+      # newColor also drives the selected-row bg. Set to *orange so both the
+      # Running pod rows and the selected-row bg render Tokyo Night Moon orange
+      # (#ff966c), with cursorFgColor=*black text on top for contrast.
+      newColor: *orange
       modifyColor: *blue
       addColor: *green
       errorColor: *red
@@ -108,10 +108,8 @@ k9s:
         - *blue
         - *red
     # TableView attributes.
-    # NOTE: list rows use *orange (#ff966c Tokyo Night Moon accent) for
-    # readable text on default bg.
     table:
-      fgColor: *orange
+      fgColor: *foreground
       bgColor: default
       # NOTE: k9s 0.51 bug #3442 ignores cursorBgColor for the selected row's
       # background (renders a built-in magenta instead). Set cursorFgColor to a

@@ -42,8 +42,8 @@ Diagnosing on the live machine is fine — `cat`, `ls -l`, `jq`, `docker compose
 | Change | Location | Why |
 |---|---|---|
 | Static, machine-agnostic config (e.g. `starship.toml`, `btop.conf`, `init.lua`) | `dot_config/<app>/...` chezmoi source entry | Plain file target; renders verbatim |
-| Adding a Homebrew tool the user invokes | `.chezmoidata.yaml` `packages.brew.*` section | Single source of truth consumed by the install run-script. (Don't forget the README "What `.chezmoidata.yaml` installs" block if the user-facing list needs to reflect it — see docs-sync rule.) |
-| Adding a cask (macOS-only) | `.chezmoidata.yaml` `macos.brew.casks` | Same single-file principle. |
+| Adding a Homebrew tool the user invokes | `.chezmoidata.yaml` `packages.brew.*` section | Single source of truth consumed by the install run-script. (Don't forget the README "What `.chezmoidata.yaml` installs" block if the user-facing list needs to reflect it — see docs-sync rule. Also add a `tools:` entry — see toolchain-sync rule.) |
+| Adding a cask (macOS-only) | `.chezmoidata.yaml` `macos.brew.casks` | Same single-file principle. (Also add a `tools:` entry — see toolchain-sync rule.) |
 | Adding an apt package (Linux-only — retired) | `.chezmoidata.yaml` `linux.apt` or `linux.apt_docker` (re-add when Linux install arm returns) | Same single-file principle. |
 | Platform-specific install step (e.g. Colima setup, font install) | `run_once_before_install-packages.sh.tmpl` with `{{ if eq .chezmoi.os "..." }}` branch | Idiomatic chezmoi; OS dispatch happens at template-render time, not via shell `if`. |
 | Machine-state file whose correct content depends on a runtime value (`brew --prefix` etc.) | Either a `.tmpl` chezmoi source file (when overwriting is OK) **or** a `run_onchange_before_…sh.tmpl` script (when the file must merge with existing content) | See "When to template vs. when to run-script" below. |
@@ -151,6 +151,14 @@ chezmoi unmanaged     # anything chezmoi sees in source but isn't managing — f
 
 The README description is grouped by platform with prose summaries, not line-for-line; `.chezmoidata.yaml` is the authoritative source. If they disagree, `.chezmoidata.yaml` is truth and the README is the bug — but AGENTS.md requires you to fix the README in the same change rather than leave a known mismatch. The two-location hazard that motivated this rule under Stow (`brew-packages.sh` *and* the README install blocks *and* the install scripts) is now down to two locations — closing one of the long-standing gaps that drove this migration.
 
+## Toolchain-sync rule (hard convention)
+
+The `toolchain` command (`dot_local/bin/executable_toolchain.tmpl` → `~/.local/bin/toolchain`) prints a grouped Title/Description/Help table of every tool this repo installs. It iterates the **same install lists** the install run-script does (`packages.brew.*`, `macos.brew.*`, `packages.npm_global`, `pi.packages`) and looks each key up in the parallel `tools:` map in `.chezmoidata.yaml` for its curated Title/Description/Help. **The install lists and the `tools:` map must stay in sync.** When you add a formula/cask/npm-global/pi-package to an install list, add a matching `tools:` entry keyed by the exact same string in the same change; when you remove one, remove its `tools:` entry too.
+
+Key-equality is what enforces this: every key in every install list must have a `tools:` entry with an identical key. A list entry with a missing `tools:` key renders a glaring `(missing entry in tools map)` row in `toolchain` output — drift is visible, not silent. AGENTS.md treats that row as a defect. Verify with `toolchain | grep "missing entry"` (expect zero matches) after any package-set change; the command is templated at `chezmoi apply` time, so re-apply before checking.
+
+`tools:` entry fields and defaults (applied by the template): `title` defaults to `base <key>` (last `/` component) — override where the binary name differs (`git-delta`→`delta`, `neovim`→`nvim`, `ripgrep`→`rg`, `azure-cli`→`az`, `docker-compose`→`docker compose`, `1password-cli`→`op`, `@…@latest` npm globals → the package short name); `desc` is a curated one-liner (no default — write it); `help` defaults to `<title> --help`, set `"—"` for GUI cask apps and fonts with no CLI. Pi-plugin (`pi.packages`) rows default `help` to `pi --help`. The map is grouped with inline section comments mirroring the install-list grouping — keep that grouping when adding entries.
+
 ## Workflow for fixing an environment issue
 
 1. **Diagnose** with read-only commands (`which`, `ls -l`, `--version`, `jq`, `colima status`, `chezmoi status`, `chezmoi diff`). Don't mutate.
@@ -158,7 +166,7 @@ The README description is grouped by platform with prose summaries, not line-for
 3. **Edit the source file** — a chezmoi-named entry (`dot_config/<app>/…`), a `.chezmoiscripts/run_*` template, or `.chezmoidata.yaml`.
 4. **Run `chezmoi apply`** end-to-end (or `chezmoi apply <path>` for a single-target iterate). Don't skip steps; don't run only the new lines.
 5. **Verify the originally-failing command.** Don't declare success from reading the template.
-6. **Update README** if its install lines drifted (docs-sync rule). Update `.chezmoiignore` if you added a non-config source-root entry.
+6. **Update README** if its install lines drifted (docs-sync rule). If you added/removed a package, also add/remove its `tools:` entry and re-run `chezmoi apply` then `toolchain | grep "missing entry"` (toolchain-sync rule). Update `.chezmoiignore` if you added a non-config source-root entry.
 7. **Commit only if the user asks.** The user explicitly requests commits; otherwise leave changes in the working tree.
 
 ## Verification rule (hard)
@@ -188,13 +196,14 @@ False success claims are the worst AGENTS.md violation. Ambient silence about a 
 - Don't add a non-templated source file whose content depends on `brew --prefix`, a username, or a version — that goes in a `.tmpl` (with `stat`/`output`) or a `run_onchange_*` script.
 - Don't claim a fix works without running `chezmoi apply` end-to-end.
 - Don't update README install blocks without updating `.chezmoidata.yaml` to match, or vice versa (docs-sync rule).
+- Don't add or remove a package in `.chezmoidata.yaml`'s install lists without adding/removing its `tools:` entry in the same change (toolchain-sync rule). A `toolchain` row reading `(missing entry in tools map)` is a defect.
 - Don't add a source-root entry (file or directory) that isn't a deployable config without adding it to `.chezmoiignore`.
 - Don't use `output "brew" "--prefix"` in a template evaluated on a fresh machine — use `stat` probes on candidate install paths instead (see "Apply order and PATH" above).
 
 ## Pointers
 
 - **README.md** — full project context, chezmoi source layout, theme policy, fresh-machine setup. Read it for the big picture; AGENTS.md is for *how to make changes safely*.
-- **.chezmoidata.yaml** — static package inventory **and** the canonical Tokyo Night Moon palette (`theme.tokyo_night_moon`). Single source of truth consumed by `run_once_before_install-packages.sh.tmpl` (package lists) and by the `*.tmpl` tool configs (palette refs). Add brew formulae / casks / npm globals here; edit a terminal color here and it propagates to every templated config on `chezmoi apply`. (The `linux:` apt section is retired; reintroduce it with the Linux install arm.)
+- **.chezmoidata.yaml** — static package inventory **and** the canonical Tokyo Night Moon palette (`theme.tokyo_night_moon`) **and** the `tools:` map (per-tool Title/Description/Help for the `toolchain` command). Single source of truth consumed by `run_once_before_install-packages.sh.tmpl` (package lists), by `dot_local/bin/executable_toolchain.tmpl` (the `tools:` map), and by the `*.tmpl` tool configs (palette refs). Add brew formulae / casks / npm globals here AND a matching `tools:` entry (toolchain-sync rule); edit a terminal color here and it propagates to every templated config — including `toolchain` — on `chezmoi apply`. (The `linux:` apt section is retired; reintroduce it with the Linux install arm.)
 - **.chezmoi.toml.tmpl** — init config template. Fails early if git missing.
 - **.chezmoiignore** — non-config source-root entries that must never deploy to `$HOME`.
 - **.chezmoiscripts/run_once_before_install-packages.sh.tmpl** — the install logic. macOS-only via `{{ if eq .chezmoi.os "darwin" }}`; the `{{ else }}` arm fails fast. Replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet. (Linux arm retired — re-add the `{{ else if eq .chezmoi.os "linux" }}` branch to bring it back.)
@@ -206,6 +215,7 @@ False success claims are the worst AGENTS.md violation. Ambient silence about a 
 - **.chezmoiscripts/run_once_after_cleanup-claude-npm-global.sh.tmpl** — self-heal removing the deprecated npm-global `@anthropic-ai/claude-code` install (macOS only).
 - **dot_zprofile.tmpl** — `~/.zprofile` (brew shellenv line, resolved via `stat` on candidate brew paths: `/opt/homebrew/bin/brew`, `/usr/local/bin/brew`).
 - **dot_config/**, **dot_zshrc**, **dot_zshenv** — config packages, chezmoi-named. Several entries under `dot_config/` are `*.tmpl` sources that render Tokyo Night Moon colors from `.chezmoidata.yaml`'s `theme.tokyo_night_moon` palette (starship, git/delta, lazygit, hunk, btop theme, ghostty; `dot_zshrc.tmpl` renders the fzf color block).
+- **dot_local/bin/executable_toolchain.tmpl** — `~/.local/bin/toolchain` (+x). Templated bash script that prints a grouped Tokyo Night Moon themed table (Title / Description / Help) of every installed tool. Ranges the install lists in `.chezmoidata.yaml` and looks each key up in the `tools:` map; rows are rendered at apply time, alignment computed manually (ANSI truecolor is applied after padding so escapes don't corrupt widths). See toolchain-sync rule.
 - **dot_pi/agent/themes/tokyo-night-moon.json.tmpl** — pi theme JSON (templated palette; deployed as a plain file target, selected via the `configure-pi-theme` run-script).
 - **dot_claude/themes/tokyo-night-moon.json.tmpl** — Claude Code theme JSON (templated palette; selected via the `configure-claude-theme` run-script).
 - **`test/`** — *retired.* Was a Docker-based test harness for the Ubuntu apply path; removed when the Linux install path was retired. Re-add it alongside the Linux install arm.

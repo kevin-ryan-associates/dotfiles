@@ -96,6 +96,160 @@ macos:
       - font-meslo-lg-nerd-font
 
 # =============================================================================
+# Toolchain catalog — per-tool metadata (Title / Description / Help) consumed
+# ONLY by the `toolchain` command (dot_local/bin/executable_toolchain.tmpl).
+# The install lists above remain the source of truth for WHAT gets installed;
+# this map curates HOW each tool is described in `toolchain`. Keys MUST match
+# the exact formula/cask/npm-string used in the install lists — key-equality
+# enforces docs-sync (a list entry with a missing tools: key renders a glaring
+# "(missing entry in tools map)" row in `toolchain`).
+#
+# Resolution (applied at chezmoi apply/render time, in the template):
+#   title: defaults to `base <key>` (last "/" path component); override where
+#          the binary name differs (git-delta→delta, neovim→nvim, …).
+#   desc:  curated one-liner.
+#   help:  defaults to "<title> --help"; "—" where there is no CLI help
+#          (GUI cask apps, fonts). Pi-plugin rows default to "pi --help".
+# =============================================================================
+tools:
+  # Zsh ecosystem (packages.brew.main)
+  starship:
+    desc: "Cross-shell prompt (Tokyo Night)"
+  eza:
+    desc: "ls replacement with icons & git status"
+  bat:
+    desc: "cat clone with syntax highlighting (Tokyo Night)"
+  fzf:
+    desc: "Fuzzy finder for files, commands, history"
+  zoxide:
+    desc: "Smarter cd with frecency tracking"
+  fd:
+    desc: "Fast find replacement (paired with fzf)"
+  git-delta:
+    title: delta
+    desc: "Syntax-highlighted git diff pager"
+  lazygit:
+    desc: "TUI git client"
+  lazydocker:
+    desc: "TUI Docker client"
+
+  # CLI utilities (packages.brew.cli)
+  jq:
+    desc: "JSON processor & query language"
+  yq:
+    desc: "YAML/TOML/JSON/XML processor"
+  htop:
+    desc: "Interactive process viewer"
+  tree:
+    desc: "Recursive directory listing"
+  btop:
+    desc: "Resource monitor (Tokyo Night)"
+  herdr:
+    desc: "Terminal workspace multiplexer"
+  glow:
+    desc: "Markdown renderer in the terminal"
+  bandwhich:
+    desc: "Live network bandwidth monitor (per-process)"
+  dust:
+    desc: "du successor with a tree view (Rust)"
+  hunk:
+    desc: "Review-first diff viewer for AI-authored changesets"
+  atuin:
+    desc: "Searchable shell history (sync optional)"
+  yamllint:
+    desc: "YAML linter"
+  "terraform-linters/tap/tflint":
+    desc: "Terraform linter"
+  "hashicorp/tap/terraform":
+    desc: "IaC provisioning CLI"
+
+  # Git platform CLIs (packages.brew.git_platform)
+  gh:
+    desc: "GitHub CLI"
+  glab:
+    desc: "GitLab CLI"
+
+  # Cloud platform CLIs (packages.brew.cloud)
+  azure-cli:
+    title: az
+    desc: "Microsoft Azure CLI"
+
+  # Kubernetes (packages.brew.k8s)
+  kubectl:
+    desc: "Kubernetes cluster control CLI"
+  helm:
+    desc: "Kubernetes package manager"
+  k9s:
+    desc: "TUI Kubernetes cluster manager"
+  kubectx:
+    desc: "Kubernetes context/namespace switcher"
+
+  # Build tools (packages.brew.build)
+  cmake:
+    desc: "Cross-platform build system generator"
+
+  # Neovim + language runtimes (packages.brew.dev)
+  neovim:
+    title: nvim
+    desc: "Vim-fork editor (AstroNvim, Tokyo Night)"
+  node:
+    desc: "JavaScript runtime"
+  npm:
+    desc: "Node package manager"
+  ripgrep:
+    title: rg
+    desc: "Fast recursive grep (paired with neovim)"
+
+  # Docker runtime — macOS (macos.brew.docker_runtime)
+  colima:
+    desc: "Lightweight Docker runtime (no GUI; replaces Docker Desktop)"
+  docker:
+    desc: "Docker CLI"
+  docker-compose:
+    title: "docker compose"
+    desc: "Docker Compose v2 plugin"
+
+  # Homebrew casks — macOS (macos.brew.casks)
+  "1password-cli":
+    title: op
+    desc: "1Password CLI (secret manager)"
+  ghostty:
+    desc: "GPU-accelerated terminal emulator (Tokyo Night)"
+    help: "—"
+  font-meslo-lg-nerd-font:
+    title: "MesloLGS NF (font)"
+    desc: "Meslo Nerd Font (icons for starship/eza)"
+    help: "—"
+
+  # npm globals (packages.npm_global)
+  "@fission-ai/openspec@latest":
+    title: openspec
+    desc: "Spec-driven AI coding workflow"
+  "@earendil-works/pi-coding-agent@latest":
+    title: pi
+    desc: "Open-source AI coding harness"
+
+  # Pi agent packages (pi.packages) — help defaults to "pi --help"
+  "npm:pi-mcp-adapter":
+    title: pi-mcp-adapter
+    desc: "MCP (Model Context Protocol) server support"
+  "npm:pi-subagents":
+    title: pi-subagents
+    desc: "Task delegation / chains / parallel / TUI"
+  "npm:pi-web-access":
+    title: pi-web-access
+    desc: "Web search + URL fetch + GitHub clone"
+  "npm:pi-hermes-memory":
+    title: pi-hermes-memory
+    desc: "Local memory + SQLite FTS5 search"
+  "npm:@narumitw/pi-plan-mode":
+    title: pi-plan-mode
+    desc: "Codex-like read-only /plan collaboration mode"
+  "npm:context-mode":
+    title: context-mode
+    desc: "Context savings via sandboxed exec + FTS5 KB"
+
+# =============================================================================
 # Tokyo Night Moon palette — single source of truth for every tool config that
 # hardcodes terminal colors. Consumed via `{{ .theme.tokyo_night_moon.<key> }}`
 # by the `*.tmpl` config sources (starship, git/delta, lazygit, hunk, btop,

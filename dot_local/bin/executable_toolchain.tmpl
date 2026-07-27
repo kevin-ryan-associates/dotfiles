@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# toolchain — print a grouped table of every tool installed by
+# kevin-ryan-associates/dotfiles (Title / Description / Help).
+#
+# Generated at `chezmoi apply` time from the `tools:` map in .chezmoidata.yaml.
+# The install lists (packages.brew.*, macos.brew.*, packages.npm_global,
+# pi.packages) drive iteration; `tools:` curates Title / Description / Help.
+# A list entry with a missing tools: key renders a "(missing entry in tools
+# map)" row so drift is obvious.
+#
+# The Help column is the help INVOCATION string (e.g. `glow --help`), not live
+# paged output — running 40+ help binaries would be unusable.
+#
+# Template note: chezmoi renders with missingkey=error, so map fields are read
+# via `index $e "field"` (safe for absent keys) instead of `.field` access, and
+# resolved with sprig `default`. A nil $e (missing tools: entry) goes to else.
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+toolchain — every tool installed by kevin-ryan-associates/dotfiles
+
+Usage:
+  toolchain           print the grouped tool table (Title / Description / Help)
+  toolchain -h|--help print this help
+
+Columns:
+  Title        the command/binary the user invokes
+  Description  one-line purpose
+  Help         help invocation string (e.g. `glow --help`), or — if none
+
+The table is generated at chezmoi apply time from .chezmoidata.yaml's `tools:`
+map; it reflects DECLARED packages, not live `brew list` state.
+USAGE
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  "") : ;;
+  *) printf 'toolchain: unknown argument %q\n' "$1" >&2; usage >&2; exit 2 ;;
+esac
+
+# Print a bold group header, then align the tab-separated rows read from stdin
+# into a 3-column table.
+_group() {
+  printf '\033[1m%s\033[0m\n' "$1"
+  column -t -s $'\t'
+  printf '\n'
+}
+
+# render-row: emit one row for a (key, entry) pair. Help defaults to
+# "<title> --help". An absent tools: entry yields a glaring "(missing …)" row.
+{{ define "render-row" -}}{{- $key := .key -}}{{- $e := .e -}}{{- if $e -}}{{- $t := default (base $key) (index $e "title") -}}{{- $h := default (printf "%s --help" $t) (index $e "help") -}}{{ printf "%s\t%s\t%s\n" $t (default "(no description)" (index $e "desc")) $h }}{{- else -}}{{ printf "%s\t(missing entry in tools map)\t—\n" $key }}{{- end -}}{{- end }}
+
+printf 'Toolchain — installed by kevin-ryan-associates/dotfiles\n\n'
+
+_group "Zsh ecosystem" <<'ROWS'
+{{ range .packages.brew.main }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "CLI utilities" <<'ROWS'
+{{ range .packages.brew.cli }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Git platform CLIs" <<'ROWS'
+{{ range .packages.brew.git_platform }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Cloud platform CLIs" <<'ROWS'
+{{ range .packages.brew.cloud }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Kubernetes" <<'ROWS'
+{{ range .packages.brew.k8s }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Build tools" <<'ROWS'
+{{ range .packages.brew.build }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Neovim + language runtimes" <<'ROWS'
+{{ range .packages.brew.dev }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Docker runtime (macOS)" <<'ROWS'
+{{ range .macos.brew.docker_runtime }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Homebrew casks (macOS GUI / fonts)" <<'ROWS'
+{{ range .macos.brew.casks }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "npm globals" <<'ROWS'
+{{ range .packages.npm_global }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
+_group "Pi agent packages" <<'ROWS'
+{{ range .pi.packages }}{{- $e := index $.tools . -}}{{- if $e -}}{{- $t := default (base .) (index $e "title") -}}{{- $h := default "pi --help" (index $e "help") -}}{{ printf "%s\t%s\t%s\n" $t (default "(no description)" (index $e "desc")) $h }}{{- else -}}{{ printf "%s\t(missing entry in tools map)\t—\n" . }}{{- end -}}{{ end -}}
+ROWS
+
+# vi: ft=sh

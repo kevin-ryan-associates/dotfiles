@@ -19,6 +19,7 @@ Currently tracking:
 - **`pi`** — [Pi](https://pi.dev/) open-source AI coding harness with Tokyo Night Moon theme
 - **`claude`** — [Claude Code](https://claude.com/product/claude-code) terminal AI coding assistant with Tokyo Night Moon theme
 - **`colima`** — Docker runtime (macOS; replaces Docker Desktop, no GUI)
+- **`toolchain`** — command that prints a formatted table of every tool this repo installs (Title / Description / Help), grouped by category
 
 ## Why this exists
 
@@ -67,7 +68,9 @@ The repo root *is* the chezmoi source directory. After `chezmoi init kevin-ryan-
 │   │   ├── tui.json
 │   │   └── themes/tokyonight-moon.json
 │   └── ghostty/config               → ~/.config/ghostty/config
-├── dot_Library/
+├── dot_local/
+│   └── bin/executable_toolchain.tmpl  → ~/.local/bin/toolchain   # grouped Title/Description/Help table, templated from .chezmoidata.yaml's tools: map
+├── Library/
 │   └── Application Support/lazydocker/config.yml   → ~/Library/Application Support/lazydocker/config.yml   # macOS only — lazydocker reads ~/Library/Application Support/, not XDG, unless XDG_CONFIG_HOME is set
 ├── .chezmoidata.yaml                 # static package inventory (brew/cask/npm lists)
 ├── .chezmoi.toml.tmpl                # init config — fails early if git missing

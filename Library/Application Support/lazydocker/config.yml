@@ -1,6 +1,11 @@
 # yaml-language-server: $schema=https://json.schemastore.org/lazydocker.json
 # Tokyo Night "best effort" theme — lazydocker only supports basic terminal color names
 # so we map the closest equivalents from the 8-color palette.
+#
+# Path note: lazydocker on macOS reads ~/Library/Application Support/lazydocker/config.yml
+# (via os.UserConfigDir / OpenPeeDeeP/xdg), NOT ~/.config/lazydocker/, unless
+# XDG_CONFIG_HOME is explicitly set. That is why this source file lives under
+# Library/ (chezmoi literal target ~/Library) rather than dot_config/.
 
 gui:
   scrollHeight: 2

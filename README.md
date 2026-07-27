@@ -61,13 +61,14 @@ The repo root *is* the chezmoi source directory. After `chezmoi init kevin-ryan-
 │   ├── herdr/config.toml            → ~/.config/herdr/config.toml
 │   ├── htop/htoprc                  → ~/.config/htop/htoprc
 │   ├── lazygit/config.yml           → ~/.config/lazygit/config.yml
-│   ├── lazydocker/config.yml        → ~/.config/lazydocker/config.yml
 │   ├── git/config                   → ~/.config/git/config
 │   ├── opencode/                    → ~/.config/opencode/
 │   │   ├── opencode.jsonc
 │   │   ├── tui.json
 │   │   └── themes/tokyonight-moon.json
 │   └── ghostty/config               → ~/.config/ghostty/config
+├── dot_Library/
+│   └── Application Support/lazydocker/config.yml   → ~/Library/Application Support/lazydocker/config.yml   # macOS only — lazydocker reads ~/Library/Application Support/, not XDG, unless XDG_CONFIG_HOME is set
 ├── .chezmoidata.yaml                 # static package inventory (brew/cask/npm lists)
 ├── .chezmoi.toml.tmpl                # init config — fails early if git missing
 ├── .chezmoiignore                   # README/AGENTS + opencode runtime artifacts
@@ -537,7 +538,7 @@ A dotfiles repo lives one careless commit away from leaking credentials, so the 
 | `~/.config/hunk/config.toml` | ✅ | Hunk theme: custom Tokyo Night Moon, chrome + syntax scopes (hunk's own `state.json` in the same dir is untracked runtime state) |
 | `~/.config/htop/htoprc` | ✅ | htop color scheme config |
 | `~/.config/lazygit/config.yml` | ✅ | Lazygit UI theme (all platforms — lazygit reads XDG first on macOS) |
-| `~/.config/lazydocker/config.yml` | ✅ | Lazydocker UI theme (all platforms — lazydocker reads XDG first on macOS) |
+| `~/Library/Application Support/lazydocker/config.yml` | ✅ | Lazydocker UI theme (macOS only — lazydocker reads `~/Library/Application Support/lazydocker/` via `os.UserConfigDir`, *not* XDG, unless `XDG_CONFIG_HOME` is set) |
 | `~/.config/git/config` | ✅ | Git config with delta colors |
 | `~/.pi/agent/themes/tokyo-night-moon.json` | ✅ | Pi theme: custom Tokyo Night Moon, 51 tokens + export |
 | `~/.pi/agent/settings.json` | ❌ (unmanaged; written by `run_onchange_before_configure-pi-theme.sh.tmpl` and `run_onchange_before_configure-pi-packages.sh.tmpl`) | Two jq merges: one sets the `theme` key to `tokyo-night-moon`, the other *ensures presence* of the curated `packages` array from `.chezmoidata.yaml`'s `pi.packages` list. Both are append-only / scalar-set, preserving every other key (provider, model, thinking level). Interactive `pi install`/`pi remove` writes are never overwritten; `chezmoi apply` only adds curated entries, never prunes |

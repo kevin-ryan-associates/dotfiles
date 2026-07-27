@@ -34,6 +34,7 @@ packages:
       - bandwhich  # live network bandwidth monitor (needs `sudo bandwhich` for raw-socket capture on macOS)
       - dust       # du successor (Rust)
       - hunk       # review-first terminal diff viewer for agent-authored changesets (hunk.dev)
+      - yamllint   # YAML linter
       - terraform-linters/tap/tflint  # Terraform linter (removed from homebrew-core under BUSL-1.1; tap-qualified name auto-taps)
       - hashicorp/tap/terraform    # Terraform CLI (removed from homebrew-core under BUSL-1.1; tap-qualified name auto-taps)
     # Git platform CLIs

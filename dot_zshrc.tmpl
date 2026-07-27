@@ -103,6 +103,11 @@ export FZF_DEFAULT_OPTS="
   --color=spinner:{{ .theme.tokyo_night_moon.magenta }}
 "
 
+# ---- atuin (shell history + fuzzy search) --------------------------------
+# Binds Up-arrow and Ctrl-R to atuin's interactive history search UI.
+# Set ATUIN_NO_BIND=1 before this line to keep the default zsh widgets.
+eval "$(atuin init zsh)"
+
 # ---- zoxide ---------------------------------------------------------------
 eval "$(zoxide init zsh)"
 

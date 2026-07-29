@@ -45,6 +45,9 @@ packages:
     # Cloud platform CLIs
     cloud:
       - azure-cli  # Microsoft Azure CLI (provides the `az` binary); core brew formula
+      - cloudflared  # Cloudflare Tunnel client (provides the `cloudflared` binary); core brew formula
+      - cloudflare-wrangler  # Cloudflare Workers CLI (provides the `wrangler` binary); core brew formula
+      - cloudflare-speed-cli  # Cloudflare-based internet speed test (TUI); core brew formula
     # Kubernetes tooling
     k8s:
       - kubectl
@@ -173,6 +176,13 @@ tools:
   azure-cli:
     title: az
     desc: "Microsoft Azure CLI"
+  cloudflared:
+    desc: "Cloudflare Tunnel client (formerly Argo Tunnel)"
+  cloudflare-wrangler:
+    title: wrangler
+    desc: "Cloudflare Workers CLI (build/deploy Workers & Pages)"
+  cloudflare-speed-cli:
+    desc: "Cloudflare-based internet speed test (TUI)"
 
   # Kubernetes (packages.brew.k8s)
   kubectl:

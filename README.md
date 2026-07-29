@@ -337,7 +337,7 @@ chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_befor
 
 For reference, the package list **and** the centralized Tokyo Night Moon palette (`theme.tokyo_night_moon`) live in `.chezmoidata.yaml` at the source root. The palette is consumed read-only by the `*.tmpl` tool configs, not by an install script. The inventory currently prescribes:
 
-**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
+**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli cloudflared cloudflare-wrangler cloudflare-speed-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx` (Kubernetes), `cmake` (build), `neovim node npm ripgrep` (AstroNvim prerequisites).
 
 **Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 

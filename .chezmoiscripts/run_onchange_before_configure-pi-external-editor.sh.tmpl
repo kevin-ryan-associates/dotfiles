@@ -1,0 +1,50 @@
+{{- /*
+=============================================================================
+configure-pi-external-editor — idempotent ~/.pi/agent/settings.json externalEditor patcher
+
+Pi (the @earendil-works/pi-coding-agent open-source AI coding harness) reads
+its external editor selection from ~/.pi/agent/settings.json's `externalEditor`
+key. That file is NOT fully owned by the repo — pi writes runtime keys
+(defaultProvider, defaultModel, defaultThinkingLevel, lastChangelogVersion)
+and the user edits it interactively via /settings. A templated file target
+would clobber those keys; this jq merge preserves every existing field and
+only sets the `externalEditor` scalar to `nvim` (the neovim binary installed
+as a brew formula in packages.brew.dev).
+
+Uses `run_onchange_before_` semantics:
+  • `onchange_` runs only when THIS SCRIPT'S source content has changed
+    (chezmoi state hash), so re-applies don't churn ~/.pi/agent/settings.json's
+    mtime once the patch is stable.
+  • `before_` runs during step 4 of the application order, before file
+    targets are written — matters because ~/.pi/agent/settings.json is NOT
+    a chezmoi-managed file; this script (alongside the theme and packages
+    scripts) is the only writer for the `externalEditor` key.
+
+No-op on a fresh machine where pi has never been run (the ~/.pi/agent/ dir
+won't exist yet — pi creates it on first launch). The user runs `pi` once to
+initialize, then re-runs `chezmoi apply` to set the external editor. This is
+the same friendly-fail-mode pattern AGENTS.md describes for dot_zprofile and
+for the other configure-pi-* scripts on a machine where pi isn't initialized.
+=============================================================================
+*/ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+PI_DIR="$HOME/.pi/agent"
+SETTINGS_FILE="$PI_DIR/settings.json"
+
+# No-op if pi has never been run (dir or settings file doesn't exist).
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "==> Pi settings not found at $SETTINGS_FILE — pi not initialized yet."
+  echo "    Run 'pi' once to initialize, then re-run 'chezmoi apply' to set the external editor."
+  exit 0
+fi
+
+echo "==> Setting external editor to nvim for pi (~/.pi/agent/settings.json)..."
+tmp=$(mktemp)
+jq --arg editor "nvim" '.externalEditor = $editor' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+echo "    externalEditor = nvim (other keys preserved)"
+{{- else -}}
+{{- /* No-op on non-macOS. */ -}}
+{{- end -}}

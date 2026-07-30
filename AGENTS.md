@@ -208,6 +208,7 @@ False success claims are the worst AGENTS.md violation. Ambient silence about a 
 - **.chezmoiignore** — non-config source-root entries that must never deploy to `$HOME`.
 - **.chezmoiscripts/run_once_before_install-packages.sh.tmpl** — the install logic. macOS-only via `{{ if eq .chezmoi.os "darwin" }}`; the `{{ else }}` arm fails fast. Replaces the legacy `bootstrap.sh` + `install-mac.sh` + `install-linux.sh` + `brew-packages.sh` quartet. (Linux arm retired — re-add the `{{ else if eq .chezmoi.os "linux" }}` branch to bring it back.)
 - **.chezmoiscripts/run_onchange_before_configure-docker-cli-plugins.sh.tmpl** — jq merge on `~/.docker/config.json` (macOS only).
+- **.chezmoiscripts/run_onchange_before_configure-pi-external-editor.sh.tmpl** — jq merge setting `externalEditor` to `nvim` in `~/.pi/agent/settings.json` (macOS only).
 - **.chezmoiscripts/run_onchange_before_configure-pi-theme.sh.tmpl** — jq merge setting `theme` in `~/.pi/agent/settings.json` (macOS only).
 - **.chezmoiscripts/run_onchange_before_configure-pi-packages.sh.tmpl** — append-only jq merge populating the `packages` array in `~/.pi/agent/settings.json` from `.chezmoidata.yaml`'s `pi.packages` (macOS only).
 - **.chezmoiscripts/run_onchange_before_configure-claude-theme.sh.tmpl** — jq merge setting `theme` in `~/.claude/settings.json` (macOS only).

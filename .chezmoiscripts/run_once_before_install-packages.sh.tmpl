@@ -77,7 +77,13 @@ echo "==> Installing Colima (Docker runtime without GUI)..."
 brew install {{ range .macos.brew.docker_runtime }}{{ . }} {{ end }}
 
 echo "==> Installing Neovim and dependencies..."
-brew install {{ range .packages.brew.dev }}{{ . }} {{ end }}
+# pnpm (a brew formula) conflicts with the pnpm/pnpx shims that corepack —
+# bundled with the `node` formula above — may have created in /usr/local/bin.
+# Let brew own the symlinks so the dotfiles are the source of truth for pnpm;
+# `brew link --overwrite` reclaims the slots idempotently (no-op when already
+# linked). `|| true` keeps the apply from aborting if only the link step fails.
+brew install {{ range .packages.brew.dev }}{{ . }} {{ end }} || true
+brew link --overwrite pnpm >/dev/null 2>&1 || true
 
 echo "==> Installing casks (1Password CLI, terminal emulator, fonts)..."
 {{- range .macos.brew.casks }}

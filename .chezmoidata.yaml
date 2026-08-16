@@ -54,6 +54,7 @@ packages:
       - helm
       - k9s
       - kubectx    # context switcher (also provides `kubens` for namespaces); core brew formula
+      - fluxcd     # Flux GitOps CLI (binary `flux`); homebrew-core formula, not the InfluxData `flux` query-language formula
     # Build tools
     build:
       - cmake
@@ -62,6 +63,7 @@ packages:
       - neovim
       - node
       - npm
+      - pnpm
       - ripgrep
   npm_global:
     - "@fission-ai/openspec@latest"
@@ -193,6 +195,9 @@ tools:
     desc: "TUI Kubernetes cluster manager"
   kubectx:
     desc: "Kubernetes context/namespace switcher"
+  fluxcd:
+    title: flux
+    desc: "Flux GitOps continuous delivery CLI for Kubernetes"
 
   # Build tools (packages.brew.build)
   cmake:
@@ -206,6 +211,8 @@ tools:
     desc: "JavaScript runtime"
   npm:
     desc: "Node package manager"
+  pnpm:
+    desc: "Fast, disk-efficient Node package manager"
   ripgrep:
     title: rg
     desc: "Fast recursive grep (paired with neovim)"

@@ -25,8 +25,11 @@ of this script is updated in-process via `eval "$(.../brew shellenv)"` so the
 `brew install` lines below work even on a fresh machine where Homebrew was
 just installed.
 
-Idempotent by construction: every step is a `brew install` (free for
-already-installed formulae) or a guarded `command -v` skip.
+Idempotent by construction: every step is an install-if-missing guard
+(`brew_install_missing` below) or a guarded `command -v` skip. `chezmoi
+apply` converges installs WITHOUT upgrading already-installed formulae —
+upgrading is a deliberate act (`brew upgrade` / `tuios update`), never an
+apply side effect.
 =============================================================================
 */ -}}
 #!/usr/bin/env bash
@@ -55,26 +58,46 @@ if ! command -v brew >/dev/null 2>&1; then
   fi
 fi
 
+# brew_install_missing <formula>... — install only what is not already in
+# the Cellar. Modern `brew install` UPGRADES any named formula that is
+# outdated, which on Intel (x86_64) Macs can trigger multi-hour from-source
+# builds for formulae whose newer versions ship no x86_64 bottle (observed:
+# a rust/llvm toolchain chain pulled in via outdated rust-based CLI tools).
+# With this guard, re-runs converge installs without surprise upgrades;
+# fresh machines still get everything (missing => installed).
+brew_install_missing() {
+  local missing=()
+  local f
+  for f in "$@"; do
+    if ! brew list --formula --versions "$f" >/dev/null 2>&1; then
+      missing+=("$f")
+    fi
+  done
+  if [ "${#missing[@]}" -gt 0 ]; then
+    brew install "${missing[@]}"
+  fi
+}
+
 echo "==> Installing Homebrew dependencies for Zsh ecosystem..."
-brew install {{ range .packages.brew.main }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.main }}{{ . }} {{ end }}
 
 echo "==> Installing CLI utilities..."
-brew install {{ range .packages.brew.cli }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.cli }}{{ . }} {{ end }}
 
 echo "==> Installing Git platform CLIs..."
-brew install {{ range .packages.brew.git_platform }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.git_platform }}{{ . }} {{ end }}
 
 echo "==> Installing Cloud platform CLIs..."
-brew install {{ range .packages.brew.cloud }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.cloud }}{{ . }} {{ end }}
 
 echo "==> Installing Kubernetes tooling..."
-brew install {{ range .packages.brew.k8s }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.k8s }}{{ . }} {{ end }}
 
 echo "==> Installing build tools..."
-brew install {{ range .packages.brew.build }}{{ . }} {{ end }}
+brew_install_missing {{ range .packages.brew.build }}{{ . }} {{ end }}
 
 echo "==> Installing Colima (Docker runtime without GUI)..."
-brew install {{ range .macos.brew.docker_runtime }}{{ . }} {{ end }}
+brew_install_missing {{ range .macos.brew.docker_runtime }}{{ . }} {{ end }}
 
 echo "==> Installing Neovim and dependencies..."
 # pnpm (a brew formula) conflicts with the pnpm/pnpx shims that corepack —
@@ -82,12 +105,14 @@ echo "==> Installing Neovim and dependencies..."
 # Let brew own the symlinks so the dotfiles are the source of truth for pnpm;
 # `brew link --overwrite` reclaims the slots idempotently (no-op when already
 # linked). `|| true` keeps the apply from aborting if only the link step fails.
-brew install {{ range .packages.brew.dev }}{{ . }} {{ end }} || true
+brew_install_missing {{ range .packages.brew.dev }}{{ . }} {{ end }} || true
 brew link --overwrite pnpm >/dev/null 2>&1 || true
 
 echo "==> Installing casks (1Password CLI, terminal emulator, fonts)..."
 {{- range .macos.brew.casks }}
-brew install --cask {{ . }} || echo "  cask {{ . }} failed (already installed outside brew?); continuing"
+if ! brew list --cask --versions {{ . }} >/dev/null 2>&1; then
+  brew install --cask {{ . }} || echo "  cask {{ . }} failed (already installed outside brew?); continuing"
+fi
 {{- end }}
 
 echo "==> Installing OpenCode..."

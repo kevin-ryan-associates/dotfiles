@@ -1,0 +1,40 @@
+{{- /*
+=============================================================================
+install-tuios.sh.tmpl — install the prebuilt tuios binary (macOS)
+
+tuios (tuios.dev — terminal window manager with agent awareness) is listed in
+homebrew-core as bottle:false. A `brew install tuios` builds it from source,
+and on Intel (x86_64) Macs brew then drags in multi-hour from-source rust/llvm
+toolchain builds. The upstream installer ships a checksummed prebuilt binary
+for darwin-x86_64/arm64 instead, so that is what this repo uses.
+
+The brew install lists in .chezmoidata.yaml deliberately exclude tuios; it
+lives under `packages.scripts` and is rendered by the `toolchain` command's
+"Script-installed (prebuilt upstream binaries)" group.
+
+`run_once_after_` semantics: runs once per script-content change, AFTER file
+targets are written (nothing depends on tuios being present earlier).
+Upgrades are NOT automatic — run `tuios update` deliberately.
+=============================================================================
+*/ -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{- if eq .chezmoi.os "darwin" }}
+if command -v tuios >/dev/null 2>&1; then
+  echo "==> tuios already installed; skipping (upgrade deliberately with 'tuios update')"
+  exit 0
+fi
+
+echo "==> Installing tuios (prebuilt binary via upstream installer)..."
+# The installer picks /usr/local/bin (if writable) or ~/.local/bin, verifies
+# the archive against upstream checksums.txt, and may need sudo for the final
+# mv. If sudo cannot prompt here, print the manual equivalent and continue
+# (never abort the apply over an unpromptable sudo).
+curl -fsSL https://raw.githubusercontent.com/Gaurav-Gosain/tuios/main/install.sh | bash || {
+  echo "  tuios install failed (sudo prompt unavailable?). Manual equivalent:" >&2
+  echo "  curl -fsSL https://raw.githubusercontent.com/Gaurav-Gosain/tuios/main/install.sh | bash" >&2
+}
+{{- else }}
+{{- fail (printf "unsupported OS: %s — this build targets macOS only (Linux support to be re-added later)" .chezmoi.os) -}}
+{{- end }}

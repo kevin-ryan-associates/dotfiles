@@ -68,6 +68,17 @@ packages:
   npm_global:
     - "@fission-ai/openspec@latest"
     - "@earendil-works/pi-coding-agent@latest"
+  # Tools installed by dedicated run_once_* scripts instead of brew — tuios is
+  # listed in homebrew-core as bottle:false, so `brew install tuios` builds it
+  # from source (and on Intel/x86_64 Macs brew also drags in multi-hour
+  # rust/llvm source builds for unrelated upgrades — see the
+  # brew-install-if-missing guard in run_once_before_install-packages.sh.tmpl).
+  # run_once_after_install-tuios.sh.tmpl installs the checksummed prebuilt
+  # binary via the upstream installer (tuios.dev). Consumed by the `toolchain`
+  # command's "Script-installed" group; keys must have a matching tools:
+  # entry (toolchain-sync rule).
+  scripts:
+    - tuios
 
 # Pi (the @earendil-works/pi-coding-agent harness) packages installed into
 # ~/.pi/agent/settings.json's `packages` array by
@@ -245,6 +256,10 @@ tools:
   "@earendil-works/pi-coding-agent@latest":
     title: pi
     desc: "Open-source AI coding harness"
+
+  # Script-installed tools (packages.scripts)
+  tuios:
+    desc: "Terminal window manager with agent awareness (tuios.dev); upgrade via 'tuios update'"
 
   # Pi agent packages (pi.packages) — help defaults to "pi --help"
   "npm:pi-mcp-adapter":

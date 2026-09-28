@@ -184,6 +184,7 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `hunk` | Review-first diff viewer for agent changesets | `hunk diff`, `hunk show` — complements `delta` (pager) and `lazygit` (TUI); themed to Tokyo Night Moon via `~/.config/hunk/config.toml` |
 | `1password-cli` | 1Password secrets | Fetch secrets via `op read` in `.zshrc` |
 | `herdr` | Agent multiplexer | Terminal workspace manager |
+| `tuios` | Terminal window manager with agent awareness | Installed via upstream prebuilt binary (`packages.scripts` — homebrew-core ships no bottle, so brew would build it from source); `tuios` to attach (auto-starts daemon); update via `tuios update` |
 | `kubectl` | Kubernetes CLI | Aliased to `k` |
 | `helm` | Kubernetes package manager | Native command |
 | `k9s` | TUI Kubernetes cluster manager | Native command |
@@ -342,6 +343,8 @@ For reference, the package list **and** the centralized Tokyo Night Moon palette
 **Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 
 **npm globals:** `@fission-ai/openspec@latest`, `@earendil-works/pi-coding-agent@latest`.
+
+**Script-installed:** `tuios` — prebuilt darwin binary via the upstream installer (homebrew-core lists it `bottle: false`, so a brew install would build it from source); upgrade deliberately with `tuios update`.
 
 **Pi packages** (curated set, idempotently ensured in `~/.pi/agent/settings.json`'s `packages` array by `run_onchange_before_configure-pi-packages.sh.tmpl`): `npm:pi-mcp-adapter` (MCP server support), `npm:pi-subagents` (task delegation / chains / parallel / TUI clarify), `npm:pi-web-access` (web search + URL fetch + GitHub clone + PDF/YT), `npm:pi-hermes-memory` (local memory + SQLite FTS5 search + secret scanning), `npm:@narumitw/pi-plan-mode` (Codex-like read-only `/plan` mode), `npm:context-mode` (MCP plugin: ~98% context savings via sandboxed code exec + FTS5 knowledge base). The merge is **append-only** — entries are *ensured present*, never removed; user `pi install` adds and entries dropped from `.chezmoidata.yaml` stay on disk (removal requires `pi remove npm:<pkg>`). pi auto-installs any missing tarballs on its next startup.
 

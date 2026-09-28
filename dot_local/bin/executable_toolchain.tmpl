@@ -141,6 +141,10 @@ _group "npm globals" <<'ROWS'
 {{ range .packages.npm_global }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
 ROWS
 
+_group "Script-installed (prebuilt upstream binaries)" <<'ROWS'
+{{ range .packages.scripts }}{{ template "render-row" (dict "key" . "e" (index $.tools .)) }}{{ end -}}
+ROWS
+
 _group "Pi agent packages" <<'ROWS'
 {{ range .pi.packages }}{{- $e := index $.tools . -}}{{- if $e -}}{{- $t := default (base .) (index $e "title") -}}{{- $h := default "pi --help" (index $e "help") -}}{{ printf "%s\t%s\t%s\n" $t (default "(no description)" (index $e "desc")) $h }}{{- else -}}{{ printf "%s\t(missing entry in tools map)\t—\n" . }}{{- end -}}{{ end -}}
 ROWS

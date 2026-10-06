@@ -182,6 +182,7 @@ These tools are installed by `run_once_before_install-packages.sh.tmpl` (which r
 | `bandwhich` | Live network bandwidth monitor | `sudo bandwhich` (needs sudo for raw-socket capture on macOS) |
 | `dust` | `du` successor (Rust) | `dust`, `dust -d 2` for depth |
 | `hunk` | Review-first diff viewer for agent changesets | `hunk diff`, `hunk show` — complements `delta` (pager) and `lazygit` (TUI); themed to Tokyo Night Moon via `~/.config/hunk/config.toml` |
+| `tofu` | OpenTofu — open-source Terraform fork | Native command (`tofu init/plan/apply`); kept alongside `terraform` |
 | `1password-cli` | 1Password secrets | Fetch secrets via `op read` in `.zshrc` |
 | `herdr` | Agent multiplexer | Terminal workspace manager |
 | `tuios` | Terminal window manager with agent awareness | Installed via upstream prebuilt binary (`packages.scripts` — homebrew-core ships no bottle, so brew would build it from source); `tuios` to attach (auto-starts daemon); update via `tuios update` |
@@ -338,7 +339,7 @@ chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_befor
 
 For reference, the package list **and** the centralized Tokyo Night Moon palette (`theme.tokyo_night_moon`) live in `.chezmoidata.yaml` at the source root. The palette is consumed read-only by the `*.tmpl` tool configs, not by an install script. The inventory currently prescribes:
 
-**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli cloudflared cloudflare-wrangler cloudflare-speed-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx fluxcd` (Kubernetes), `cmake` (build), `neovim node npm pnpm ripgrep` (AstroNvim prerequisites).
+**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform opentofu` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli cloudflared cloudflare-wrangler cloudflare-speed-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx fluxcd` (Kubernetes), `cmake` (build), `neovim node npm pnpm ripgrep` (AstroNvim prerequisites).
 
 **Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 

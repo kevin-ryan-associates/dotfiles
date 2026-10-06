@@ -38,6 +38,7 @@ packages:
       - yamllint   # YAML linter
       - terraform-linters/tap/tflint  # Terraform linter (removed from homebrew-core under BUSL-1.1; tap-qualified name auto-taps)
       - hashicorp/tap/terraform    # Terraform CLI (removed from homebrew-core under BUSL-1.1; tap-qualified name auto-taps)
+      - opentofu      # OpenTofu CLI (open-source Terraform fork, MPL-2.0; homebrew-core formula providing `tofu`; kept alongside `hashicorp/tap/terraform` deliberately — user choice to run both)
     # Git platform CLIs
     git_platform:
       - gh
@@ -178,6 +179,9 @@ tools:
     desc: "Terraform linter"
   "hashicorp/tap/terraform":
     desc: "IaC provisioning CLI"
+  opentofu:
+    title: tofu
+    desc: "Open-source Terraform fork (MPL-2.0)"
 
   # Git platform CLIs (packages.brew.git_platform)
   gh:

@@ -116,9 +116,17 @@ fi
 {{- end }}
 
 echo "==> Installing OpenCode..."
-curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/master/install -o /tmp/opencode-install.sh
-bash /tmp/opencode-install.sh --no-modify-path
-rm -f /tmp/opencode-install.sh
+# The upstream installer ignores --no-modify-path and exits 1 when no shell rc
+# file exists yet — always the case on a fresh machine, since this script runs
+# BEFORE chezmoi writes ~/.zshrc. Skip if already installed, and never let it
+# abort the apply (the binary is installed before the rc-file check fails).
+if [ -x "$HOME/.opencode/bin/opencode" ] || command -v opencode >/dev/null 2>&1; then
+  echo "  opencode already installed; skipping"
+else
+  curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/master/install -o /tmp/opencode-install.sh
+  bash /tmp/opencode-install.sh --no-modify-path || echo "  opencode installer exited non-zero (no shell rc file yet?); continuing"
+  rm -f /tmp/opencode-install.sh
+fi
 
 echo "==> Installing OpenSpec (spec-driven dev framework)..."
 npm install -g {{ range .packages.npm_global }}{{ . }} {{ end }}

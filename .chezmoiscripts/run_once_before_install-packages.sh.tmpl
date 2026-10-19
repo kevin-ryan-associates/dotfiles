@@ -115,19 +115,6 @@ if ! brew list --cask --versions {{ . }} >/dev/null 2>&1; then
 fi
 {{- end }}
 
-echo "==> Installing OpenCode..."
-# The upstream installer ignores --no-modify-path and exits 1 when no shell rc
-# file exists yet — always the case on a fresh machine, since this script runs
-# BEFORE chezmoi writes ~/.zshrc. Skip if already installed, and never let it
-# abort the apply (the binary is installed before the rc-file check fails).
-if [ -x "$HOME/.opencode/bin/opencode" ] || command -v opencode >/dev/null 2>&1; then
-  echo "  opencode already installed; skipping"
-else
-  curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/master/install -o /tmp/opencode-install.sh
-  bash /tmp/opencode-install.sh --no-modify-path || echo "  opencode installer exited non-zero (no shell rc file yet?); continuing"
-  rm -f /tmp/opencode-install.sh
-fi
-
 echo "==> Installing OpenSpec (spec-driven dev framework)..."
 npm install -g {{ range .packages.npm_global }}{{ . }} {{ end }}
 
@@ -150,7 +137,7 @@ echo "Next steps (run separately, not part of this script):"
 echo "  1. Open a new terminal window"
 echo "  2. Zinit will auto-install on first run (~10-30s)"
 echo "  3. Run 'nvim' to install AstroNvim plugins"
-echo "  4. Run 'opencode auth' to authenticate"
+echo "  4. Run 'opencode auth login' to authenticate"
 {{- if eq .chezmoi.os "darwin" }}
 echo "  5. Run 'colima start' to launch the Docker runtime"
 {{- end }}

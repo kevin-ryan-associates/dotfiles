@@ -7,7 +7,7 @@ Currently tracking:
 - **`zsh`** — Zsh shell configuration with Zinit plugin manager, Starship prompt, and comprehensive aliases
 - **`starship`** — Starship prompt configuration with Tokyo Night palette
 - **`nvim`** — [AstroNvim](https://astronvim.com/) Neovim setup with Tokyo Night colorscheme
-- **`opencode`** — [OpenCode](https://github.com/opencode-ai/opencode) CLI AI coding agent with Tokyo Night theme
+- **`opencode`** — [OpenCode](https://opencode.ai) CLI AI coding agent with Tokyo Night theme
 - **`ghostty`** — [Ghostty](https://ghostty.org/) terminal emulator with Tokyo Night theme
 - **`bat`** — Syntax highlighting with Tokyo Night theme
 - **`btop`** — Resource monitor with Tokyo Night theme
@@ -76,7 +76,7 @@ The repo root *is* the chezmoi source directory. After `chezmoi init kevin-ryan-
 ├── .chezmoi.toml.tmpl                # init config — fails early if git missing
 ├── .chezmoiignore                   # README/AGENTS + opencode runtime artifacts
 └── .chezmoiscripts/
-    ├── run_once_before_install-packages.sh.tmpl              # brew install + casks + opencode + openspec
+    ├── run_once_before_install-packages.sh.tmpl              # brew install + casks + openspec
     ├── run_onchange_before_configure-docker-cli-plugins.sh.tmpl  # macOS jq patch to ~/.docker/config.json
     └── run_once_after_cleanup-docker-desktop-symlinks.sh.tmpl    # self-heal broken /usr/local/bin links
 ```
@@ -339,7 +339,7 @@ chezmoi execute-template < ~/.local/share/chezmoi/.chezmoiscripts/run_once_befor
 
 For reference, the package list **and** the centralized Tokyo Night Moon palette (`theme.tokyo_night_moon`) live in `.chezmoidata.yaml` at the source root. The palette is consumed read-only by the `*.tmpl` tool configs, not by an install script. The inventory currently prescribes:
 
-**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform opentofu` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli cloudflared cloudflare-wrangler cloudflare-speed-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx fluxcd` (Kubernetes), `cmake` (build), `neovim node npm pnpm ripgrep` (AstroNvim prerequisites).
+**Brew formulae:** `starship eza bat fzf zoxide fd git-delta lazygit lazydocker` (Zsh ecosystem), `jq yq htop tree btop herdr glow bandwhich dust hunk atuin yamllint tflint terraform opencode opentofu` (CLI utilities), `gh glab` (Git platform CLIs), `azure-cli cloudflared cloudflare-wrangler cloudflare-speed-cli` (Cloud platform CLIs), `kubectl helm k9s kubectx fluxcd` (Kubernetes), `cmake` (build), `neovim node npm pnpm ripgrep` (AstroNvim prerequisites).
 
 **Brew casks:** `1password-cli ghostty font-meslo-lg-nerd-font`. Plus `colima docker docker-compose` (the Docker runtime). `~/.docker/config.json` is jq-patched by `run_onchange_before_configure-docker-cli-plugins.sh.tmpl` to wire the brew `cli-plugins` dir.
 
@@ -349,7 +349,7 @@ For reference, the package list **and** the centralized Tokyo Night Moon palette
 
 **Pi packages** (curated set, idempotently ensured in `~/.pi/agent/settings.json`'s `packages` array by `run_onchange_before_configure-pi-packages.sh.tmpl`): `npm:pi-mcp-adapter` (MCP server support), `npm:pi-subagents` (task delegation / chains / parallel / TUI clarify), `npm:pi-web-access` (web search + URL fetch + GitHub clone + PDF/YT), `npm:pi-hermes-memory` (local memory + SQLite FTS5 search + secret scanning), `npm:@narumitw/pi-plan-mode` (Codex-like read-only `/plan` mode), `npm:context-mode` (MCP plugin: ~98% context savings via sandboxed code exec + FTS5 knowledge base). The merge is **append-only** — entries are *ensured present*, never removed; user `pi install` adds and entries dropped from `.chezmoidata.yaml` stay on disk (removal requires `pi remove npm:<pkg>`). pi auto-installs any missing tarballs on its next startup.
 
-**Also installed:** OpenCode installer (upstream `opencode-ai/opencode` — `curl | bash -- --no-modify-path`); Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
+**Also installed:** Claude Code native installer (`curl https://claude.ai/install.sh | bash`, auto-updates in background); `bat cache --build`. The deprecated npm-global `@anthropic-ai/claude-code` install is removed by a `run_once_after_*` self-heal script if present.
 
 > Linux (Ubuntu) support is retired for now — `chezmoi apply` fails fast with an explicit message on non-macOS. The Linux branch can be re-added later by reintroducing an `{{- else if eq .chezmoi.os "linux" }}` arm in `run_once_before_install-packages.sh.tmpl` and a `linux:` section in `.chezmoidata.yaml`.
 
@@ -370,7 +370,7 @@ Mason (LSP/linter/formatter installer) will also run on first open. Let it compl
 ### 5. Authenticate OpenCode
 
 ```bash
-opencode auth
+opencode auth login
 ```
 
 Auth tokens are stored in `~/.local/share/opencode/` — outside the source state and never tracked.
